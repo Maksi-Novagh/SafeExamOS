@@ -1,0 +1,26 @@
+#!/bin/sh
+set -eu
+
+deadline=$(( $(date +%s) + 90 ))
+
+while [ "$(date +%s)" -lt "$deadline" ]; do
+  cage_pid=$(pgrep -x cage 2>/dev/null | head -n 1 || true)
+  chromium_pid=$(pgrep -x chromium 2>/dev/null | head -n 1 || true)
+
+  if [ -n "$cage_pid" ] && [ -n "$chromium_pid" ]; then
+    cmdline=$(tr '\0' ' ' < "/proc/$chromium_pid/cmdline" 2>/dev/null || true)
+    case "$cmdline" in
+      *"/usr/share/safeexamos/launcher/index.html"*)
+        printf '%s\n' 'SAFEEXAMOS_CI_UI_OK' > /dev/ttyS0 2>/dev/null || true
+        mkdir -p /run/safeexamos
+        printf '%s\n' 'SAFEEXAMOS_CI_UI_OK' > /run/safeexamos/ci-ui-ok
+        exit 0
+        ;;
+    esac
+  fi
+
+  sleep 1
+done
+
+printf '%s\n' 'SAFEEXAMOS_CI_UI_TIMEOUT' > /dev/ttyS0 2>/dev/null || true
+exit 1

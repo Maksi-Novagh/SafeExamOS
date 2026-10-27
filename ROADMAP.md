@@ -30,7 +30,8 @@ This roadmap is deliberately evidence-driven. A checkbox only means the item is 
 - [ ] Keyboard layout selector
 - [ ] Display scaling and accessibility controls
 - [ ] Clean shutdown / session destruction
-- [ ] Automated boot smoke test in QEMU
+- [x] Automated userspace boot smoke test in QEMU
+- [ ] Automated graphical Cage + Chromium smoke test
 
 ## Phase 2 — Exam launcher
 
@@ -107,8 +108,9 @@ This roadmap is deliberately evidence-driven. A checkbox only means the item is 
 - [x] Static shell/build/UI-direction checks
 - [x] ISO artifact upload pipeline
 - [x] QEMU smoke-test harness with serial boot marker
-- [ ] First successful CI-built amd64 ISO
-- [ ] First successful automated QEMU boot
+- [x] First successful CI-built amd64 ISO
+- [x] First successful automated QEMU userspace boot
+- [ ] First successful automated graphical QEMU launcher test
 - [ ] SBOM
 - [ ] reproducible build evidence
 - [ ] signed artifacts

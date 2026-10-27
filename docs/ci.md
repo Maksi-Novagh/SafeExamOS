@@ -45,7 +45,7 @@ The job also checks that the resulting ISO contains a live filesystem, kernel an
 
 Workflow job: `QEMU boot smoke test`
 
-The ISO is booted under QEMU with OVMF/UEFI.
+The exact kernel and initrd are extracted from the built ISO and booted directly under QEMU while the same ISO remains attached as the live medium.
 
 A small systemd one-shot service in the guest emits:
 
@@ -91,8 +91,7 @@ Before production releases, third-party actions should be pinned to audited comm
 
 Planned:
 
-- graphical VM test with screenshot comparison;
-- Chromium launcher process health test;
+- graphical screenshot comparison against an approved reference;
 - network pre-flight test;
 - `.seb` fixture tests;
 - URL-filter conformance tests;
@@ -136,3 +135,50 @@ To avoid conflating two different properties, CI now separates them conceptually
 - the QEMU userspace smoke test extracts the exact kernel and initrd from that ISO and boots them directly with the ISO attached as the live medium.
 
 This proves that the produced SafeExamOS live filesystem can reach systemd userspace and emit the CI marker. It does **not** by itself prove that the graphical UEFI boot menu automatically reaches the kernel. A dedicated UEFI/bootloader automation test remains a separate future milestone.
+
+
+## Level 4 — graphical launcher smoke
+
+Workflow job: `QEMU graphical launcher smoke test`
+
+This test boots the exact kernel/initrd from the generated ISO with a virtual VGA device and the ISO attached as the live medium. Inside the guest, a CI-only observer waits for both:
+
+- `cage`;
+- `chromium`.
+
+They must remain alive across consecutive checks. Only then does the guest emit:
+
+```text
+SAFEEXAMOS_CI_UI_OK
+```
+
+The host then asks QEMU through QMP to capture the current virtual framebuffer to:
+
+```text
+.ci/safeexamos-launcher.ppm
+```
+
+The serial log and framebuffer capture are uploaded as CI artifacts.
+
+### What a PASS proves
+
+A green graphical smoke test proves that, in the QEMU test environment:
+
+- the live system reaches the normal exam-user session;
+- Cage starts and remains alive;
+- Chromium starts and remains alive;
+- a graphical framebuffer exists and can be captured.
+
+### What a PASS still does not prove
+
+It does not yet prove:
+
+- pixel-perfect visual conformity with the SEB design reference;
+- keyboard and pointer interaction inside the launcher;
+- automatic boot through the ISO's UEFI/bootloader menu;
+- lockdown resistance;
+- real-hardware GPU/input compatibility.
+
+Pixel comparison and input automation are separate follow-up tests.
+
+The UI marker is a CI observer only. It does not weaken the production session or provide a shell/remote-control interface.
