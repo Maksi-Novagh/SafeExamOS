@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+chmod 0755 /usr/local/bin/safeexamos-session
+chmod 0644 /etc/profile.d/90-safeexamos-session.sh
+systemctl enable NetworkManager.service
+cat > /etc/sysctl.d/60-safeexamos-prototype.conf <<'EOF'
+kernel.sysrq = 0
+fs.protected_hardlinks = 1
+fs.protected_symlinks = 1
+kernel.kptr_restrict = 2
+kernel.dmesg_restrict = 1
+EOF

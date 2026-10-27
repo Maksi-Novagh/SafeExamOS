@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=SafeExamOS
+export XDG_SESSION_DESKTOP=SafeExamOS
+export XKB_DEFAULT_LAYOUT="${SAFEEXAMOS_XKB_LAYOUT:-us}"
+
+LAUNCHER="file:///usr/share/safeexamos/launcher/index.html"
+
+exec cage -d -- chromium \
+  --kiosk \
+  --no-first-run \
+  --no-default-browser-check \
+  --disable-session-crashed-bubble \
+  --disable-infobars \
+  --disable-translate \
+  --disable-features=Translate \
+  --user-data-dir="/run/user/$(id -u)/safeexamos-chromium" \
+  "$LAUNCHER"
