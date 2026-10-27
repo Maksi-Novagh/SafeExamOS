@@ -129,7 +129,7 @@ jobs:
       - name: Install QEMU tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends qemu-system-x86 xorriso
+          sudo apt-get install -y --no-install-recommends qemu-system-x86 xorriso socat
 
       - name: Start graphical SafeExamOS session and capture framebuffer
         run: ./scripts/qemu-graphical-smoke.sh build/amd64/out/SafeExamOS-amd64.iso

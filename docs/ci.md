@@ -182,3 +182,12 @@ It does not yet prove:
 Pixel comparison and input automation are separate follow-up tests.
 
 The UI marker is a CI observer only. It does not weaken the production session or provide a shell/remote-control interface.
+
+
+### 2026-10-27 — graphical smoke test dependency failure
+
+Run #8 did not reach the guest graphical session. The host-side graphical smoke script exited immediately because `socat`, used to communicate with QEMU's QMP socket, was not installed on the GitHub-hosted runner.
+
+This was a CI dependency omission, not a SafeExamOS graphical runtime failure.
+
+The graphical job now installs `socat` explicitly together with QEMU and xorriso before starting the VM.
