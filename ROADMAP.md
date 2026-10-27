@@ -103,6 +103,12 @@ This roadmap is deliberately evidence-driven. A checkbox only means the item is 
 
 ## Phase 7 — Release engineering
 
+- [x] Initial GitHub Actions CI definition
+- [x] Static shell/build/UI-direction checks
+- [x] ISO artifact upload pipeline
+- [x] QEMU smoke-test harness with serial boot marker
+- [ ] First successful CI-built amd64 ISO
+- [ ] First successful automated QEMU boot
 - [ ] SBOM
 - [ ] reproducible build evidence
 - [ ] signed artifacts
