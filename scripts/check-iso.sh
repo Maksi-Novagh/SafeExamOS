@@ -9,14 +9,16 @@ fi
 
 echo "Checking ISO: $ISO"
 
-ISO_TREE=$(xorriso -indev "$ISO" -find / 2>&1)
+LIVE_LIST=$(xorriso -indev "$ISO" -ls /live 2>&1)
 
 printf '%s
-' "$ISO_TREE" | grep -q '/live/filesystem.squashfs'
+' "$LIVE_LIST"
 printf '%s
-' "$ISO_TREE" | grep -Eq '/live/vmlinuz([0-9.-]*)?$'
+' "$LIVE_LIST" | grep -q 'filesystem.squashfs'
 printf '%s
-' "$ISO_TREE" | grep -Eq '/live/initrd([0-9.-]*)?\.img$|/live/initrd([0-9.-]*)?$'
+' "$LIVE_LIST" | grep -Eq 'vmlinuz'
+printf '%s
+' "$LIVE_LIST" | grep -Eq 'initrd'
 
 if [ -f "$ISO.sha256" ]; then
   (
