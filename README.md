@@ -1,81 +1,139 @@
 # SafeExamOS
 
-**A bootable, ephemeral examination operating system designed for the Safe Exam Browser ecosystem.**
+**A bootable, ephemeral examination operating system designed to interoperate with the Safe Exam Browser (SEB) ecosystem.**
 
-SafeExamOS aims to turn almost any compatible computer into a clean, predictable and secure examination workstation without depending on the student's installed operating system.
+> [!IMPORTANT]
+> SafeExamOS is an independent community project. It is **not affiliated with, endorsed by, or maintained by** Safe Exam Browser, ETH Zürich, or the SEB Alliance.
 
-Boot from USB, select a network, load a `.seb` configuration or enter an exam code, and start the examination.
+SafeExamOS explores a complementary security model for digital examinations:
 
-After shutdown, the examination environment disappears.
+> Instead of trying to lock down an arbitrary student operating system, boot a small operating system whose only purpose is to run the exam.
 
-## Why?
+## Project status
 
-Safe Exam Browser provides a secure examination environment on supported operating systems. SafeExamOS explores a complementary approach:
+**Research / architecture / early prototyping. Not ready for real examinations.**
 
-**Instead of securing the student's existing operating system, boot into an operating system built specifically for the exam.**
+The repository is intentionally documentation-first while the compatibility and threat model are being validated against current upstream SEB behavior.
 
-This can provide:
-
-- a known and reproducible system state;
-- reduced interference from installed software;
-- disposable exam sessions;
-- hardware pre-flight checks;
-- centralized supervision and event logging;
-- compatibility with `.seb` configurations;
-- support for institution-managed and BYOD computers;
-- AMD64 and ARM64 builds, with additional architectures planned.
-
-## Intended workflow
+## Target workflow
 
 ```text
 Power on
-   ↓
-Boot SafeExamOS
-   ↓
-Hardware & network check
-   ↓
-Enter exam code / URL
-or load .seb file
-   ↓
-Validate configuration
-   ↓
-Enter locked exam environment
-   ↓
-Complete examination
-   ↓
-Submit
-   ↓
+  |
+Boot SafeExamOS from USB / disk / managed device
+  |
+Hardware + network pre-flight
+  |
+Load .seb file / exam URL / institution-issued exam code
+  |
+Validate configuration and compatibility
+  |
+Enter locked exam session
+  |
+Exam
+  |
+Submit / terminate
+  |
+Destroy ephemeral session state
+  |
 Shutdown
-   ↓
-Session data destroyed
 ```
 
-## Project goals
+## Initial platform strategy
 
-SafeExamOS is intended to investigate and develop:
+| Platform | Status | Notes |
+|---|---|---|
+| x86-64 / amd64 | Tier 1 target | Primary PC build |
+| ARM64 / aarch64 | Tier 1 target | SBCs and UEFI ARM64 where hardware support exists |
+| ARMv7 / armhf | Tier 2 target | Legacy/low-power ARM |
+| x86 / i686 | Legacy research | Debian 13 no longer has a normal i386 kernel/installer |
+| RISC-V 64 | Future research | Debian 13 supports riscv64, but not a near-term exam target |
 
-- a Linux-based examination kiosk;
-- Safe Exam Browser configuration compatibility;
-- hardware compatibility detection;
-- signed and immutable system images;
-- ephemeral user sessions;
-- Chromium-based restricted browsing;
-- configurable USB and Bluetooth policies;
-- event-based examination auditing;
-- optional read-only live screen supervision;
-- integration with SEB Server and existing LMS platforms;
-- multi-architecture builds.
+The current base candidate is **Debian 13 (Trixie)** for amd64/arm64/armhf. The 32-bit x86 story is intentionally separate.
+
+## Proposed architecture
+
+```text
+┌────────────────────────────────────────────┐
+│               SafeExamOS UI               │
+│ pre-flight · network · accessibility · exam│
+├────────────────────────────────────────────┤
+│             Exam Session Manager           │
+├─────────────┬──────────────┬───────────────┤
+│ SEB config  │ Browser      │ Audit /       │
+│ compatibility│ policy      │ proctoring    │
+├─────────────┴──────────────┴───────────────┤
+│         Privileged Policy Daemon           │
+│ input · devices · display · session · IPC  │
+├────────────────────────────────────────────┤
+│ systemd · Wayland kiosk · Linux kernel     │
+├────────────────────────────────────────────┤
+│ immutable root · ephemeral writable state  │
+└────────────────────────────────────────────┘
+```
+
+A minimal Wayland kiosk compositor such as Cage is being evaluated as an implementation component, **not** as the security boundary. The security boundary must be enforced by the OS image, service configuration, privilege model, device policy, browser policy, and verified session lifecycle.
+
+## Goals
+
+- boot into a known and reproducible exam environment;
+- avoid dependence on software installed in the student's normal OS;
+- support Ethernet, Wi-Fi, common keyboards, mice, touchpads and accessibility settings;
+- implement a documented subset of SEB configuration semantics before claiming broader compatibility;
+- investigate SEB Server interoperability;
+- implement URL filtering and browser restrictions;
+- provide ephemeral sessions with minimal persistent state;
+- provide a hardware compatibility checker and support database;
+- support event-based auditing and privacy-conscious supervision;
+- build reproducible images for multiple architectures;
+- design around defensive security research and responsible disclosure.
 
 ## Non-goals
 
-SafeExamOS is **not** intended to bypass or weaken Safe Exam Browser.
+SafeExamOS is **not** intended to:
 
-The project is focused on secure examination infrastructure, interoperability, defensive security research and improving the reliability of digital examinations.
+- bypass Safe Exam Browser;
+- provide an exam-cheating environment;
+- weaken SEB security controls;
+- silently keylog students;
+- claim compatibility with Browser Exam Key / Config Key until behavior has been independently validated;
+- claim that Linux or kiosk mode is automatically secure;
+- support every computer or every ARM board.
 
-## Status
+## Research baseline
 
-🚧 **Early research and prototyping**
+The current research snapshot is in [docs/research/2026-10-27-seb-baseline.md](docs/research/2026-10-27-seb-baseline.md).
 
-SafeExamOS is currently an independent community project and is **not affiliated with or endorsed by the Safe Exam Browser project, ETH Zürich or the SEB Alliance.**
+Key upstream observations:
 
-We would however strongly welcome discussion and collaboration with the Safe Exam Browser community.
+- current SEB Windows uses Chromium/CefSharp and sends Config Key / Browser Exam Key-related request headers;
+- SEB Server can supply exam configurations and session information;
+- upstream SEB already contains production screen-proctoring functionality;
+- current SEB Windows has active integrity, window-monitoring, application-monitoring and remote-session defenses;
+- Browser Exam Key behavior is platform-specific, so compatibility cannot be assumed across architectures.
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Threat model](docs/threat-model.md)
+- [SEB compatibility plan](docs/seb-compatibility.md)
+- [Hardware support strategy](docs/hardware-support.md)
+- [Proctoring and privacy](docs/proctoring-and-privacy.md)
+- [Research baseline](docs/research/2026-10-27-seb-baseline.md)
+- [Roadmap](ROADMAP.md)
+- [Security policy](SECURITY.md)
+- [Contributing](CONTRIBUTING.md)
+
+## Upstream references
+
+- Safe Exam Browser: https://safeexambrowser.org/
+- SEB GitHub organization: https://github.com/SafeExamBrowser
+- SEB Windows: https://github.com/SafeExamBrowser/seb-win-refactoring
+- SEB Server: https://github.com/SafeExamBrowser/seb-server
+- SEB screen proctoring server: https://github.com/SafeExamBrowser/seb-screen-proctoring-server
+
+## License
+
+No project-wide license has been selected yet. Do not assume that repository contents may be redistributed under a particular license until a LICENSE file is added.
+
+Upstream SEB repositories have their own licenses (many use MPL-2.0). SafeExamOS must respect those licenses and avoid copying upstream code without preserving the required notices and obligations.

@@ -1,42 +1,112 @@
-Phase 0 — Research
-[ ] Analyse .seb configuration format
-[ ] SEB ecosystem compatibility study
-[ ] Threat model
-[ ] Select Linux base
+# SafeExamOS roadmap
 
-Phase 1 — Bootable prototype
-[ ] AMD64 live ISO
-[ ] Chromium kiosk
-[ ] Wi-Fi / Ethernet setup
-[ ] Keyboard layout selection
-[ ] Ephemeral filesystem
+This roadmap is deliberately evidence-driven. A checkbox only means the item is implemented and validated in this repository.
 
-Phase 2 — SEB compatibility
-[ ] .seb parser
-[ ] Start URL
-[ ] URL filtering
-[ ] certificate handling
-[ ] SEB Server integration
-[ ] Config Key compatibility research
-[ ] Browser Exam Key compatibility research
+## Phase 0 — Research and design
 
-Phase 3 — Lockdown
-[ ] immutable root
-[ ] application isolation
-[ ] USB policy
-[ ] Bluetooth policy
-[ ] screenshot restrictions
-[ ] secure shutdown
+- [x] Establish current upstream SEB baseline (2026-10-27)
+- [x] Draft system architecture
+- [x] Draft threat model
+- [x] Draft hardware support tiers
+- [x] Draft SEB compatibility matrix
+- [x] Select Debian 13 as the primary base candidate for amd64/arm64/armhf
+- [ ] Decide project-wide license
+- [ ] Validate SEB configuration serialization/encryption formats
+- [ ] Map every supported SEB configuration key to SafeExamOS behavior
+- [ ] Document unsupported and OS-specific keys
+- [ ] Validate SEB Server protocol behavior in a lab
+- [ ] Validate Browser Exam Key / Config Key behavior without claiming compatibility prematurely
 
-Phase 4 — Hardware
-[ ] compatibility scanner
-[ ] AMD64 hardware database
-[ ] ARM64
-[ ] Raspberry Pi 4/5
-[ ] fallback rendering
+## Phase 1 — Bootable proof of concept
 
-Phase 5 — Supervision
-[ ] event timeline
-[ ] event-triggered screenshots
-[ ] read-only live screen view
-[ ] signed incident reports
+- [ ] Reproducible amd64 image build
+- [ ] Read-only base system
+- [ ] Ephemeral writable state
+- [ ] Automatic graphical boot
+- [ ] Wayland kiosk session
+- [ ] Chromium kiosk
+- [ ] Ethernet setup
+- [ ] Wi-Fi setup
+- [ ] Keyboard layout selector
+- [ ] Display scaling and accessibility controls
+- [ ] Clean shutdown / session destruction
+- [ ] Automated boot smoke test in QEMU
+
+## Phase 2 — Exam launcher
+
+- [ ] Local `.seb` file selection
+- [ ] URL entry
+- [ ] Institution exam-code flow
+- [ ] Configuration validator
+- [ ] Compatibility warnings
+- [ ] Start URL
+- [ ] URL filter
+- [ ] certificate handling
+- [ ] proxy handling
+- [ ] controlled downloads/uploads
+- [ ] controlled secondary windows
+- [ ] browser cache/cookie lifecycle
+
+## Phase 3 — Lockdown
+
+- [ ] Dedicated unprivileged exam user
+- [ ] Privileged policy daemon with narrow IPC
+- [ ] Disable alternate TTY access
+- [ ] Disable shell access from the exam session
+- [ ] Device hotplug policy
+- [ ] USB class policy
+- [ ] Bluetooth profile policy
+- [ ] display/output policy
+- [ ] browser process containment
+- [ ] system service minimization
+- [ ] signed update strategy
+- [ ] measured/verified boot design
+- [ ] watchdog and fail-closed recovery
+- [ ] security regression tests
+
+## Phase 4 — Hardware
+
+- [ ] Compatibility scanner
+- [ ] PCI/USB hardware report format
+- [ ] Hardware support database
+- [ ] amd64 Tier 1 validation matrix
+- [ ] arm64 generic UEFI research
+- [ ] Raspberry Pi 4 validation
+- [ ] Raspberry Pi 5 validation
+- [ ] armhf legacy build research
+- [ ] x86 32-bit legacy feasibility decision
+- [ ] software-rendering fallback
+- [ ] known-good USB Ethernet/Wi-Fi fallback devices
+
+## Phase 5 — SEB ecosystem integration
+
+- [ ] SEB Server connectivity prototype
+- [ ] exam discovery / selection flow
+- [ ] server-supplied configuration flow
+- [ ] connectivity heartbeat
+- [ ] event model interoperability research
+- [ ] Browser Exam Key compatibility decision
+- [ ] Config Key compatibility decision
+- [ ] upstream discussion / RFC
+
+## Phase 6 — Audit and proctoring
+
+- [ ] event timeline
+- [ ] security-event screenshots
+- [ ] configurable screenshot retention
+- [ ] explicit user-visible supervision indicator
+- [ ] read-only live screen supervision research
+- [ ] supervisor-access audit trail
+- [ ] signed incident bundle
+- [ ] privacy impact / data minimization guide
+- [ ] no raw keylogging by default
+
+## Phase 7 — Release engineering
+
+- [ ] SBOM
+- [ ] reproducible build evidence
+- [ ] signed artifacts
+- [ ] release provenance
+- [ ] CVE/dependency monitoring
+- [ ] documented rollback process
+- [ ] public beta hardware matrix
