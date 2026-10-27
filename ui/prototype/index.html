@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SafeExamOS UI Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell" aria-labelledby="title">
+    <section class="window" aria-label="SafeExamOS pre-flight">
+      <header class="header">
+        <div>
+          <div class="product">SafeExamOS</div>
+          <h1 id="title">Start an examination</h1>
+        </div>
+        <div class="status-chip" id="overall-status" data-state="ready">System ready</div>
+      </header>
+
+      <div class="notice">
+        Independent community project designed for interoperability research with the Safe Exam Browser ecosystem.
+      </div>
+
+      <section class="panel">
+        <h2>Exam configuration</h2>
+        <div class="field-row">
+          <label for="exam-code">Exam code</label>
+          <div class="field-actions">
+            <input id="exam-code" inputmode="numeric" autocomplete="off" placeholder="Enter exam code">
+            <button class="primary" id="continue-button" type="button">Continue</button>
+          </div>
+        </div>
+        <div class="secondary-actions">
+          <button type="button" id="file-button">Open .seb file…</button>
+          <button type="button" id="url-button">Enter URL…</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title-row">
+          <h2>System check</h2>
+          <button class="compact" id="rerun-button" type="button">Run again</button>
+        </div>
+
+        <ul class="checks" id="checks" aria-live="polite">
+          <li><span class="indicator ok">✓</span><span class="check-label">Network</span><span class="check-detail">Ethernet connected</span></li>
+          <li><span class="indicator ok">✓</span><span class="check-label">Keyboard</span><span class="check-detail">Belgian (AZERTY)</span></li>
+          <li><span class="indicator ok">✓</span><span class="check-label">Pointer</span><span class="check-detail">USB mouse</span></li>
+          <li><span class="indicator ok">✓</span><span class="check-label">Display</span><span class="check-detail">1 active display</span></li>
+          <li><span class="indicator ok">✓</span><span class="check-label">Session storage</span><span class="check-detail">Ephemeral</span></li>
+        </ul>
+      </section>
+
+      <footer class="footer">
+        <div class="system-links">
+          <button type="button">Network</button>
+          <button type="button">Keyboard</button>
+          <button type="button">Accessibility</button>
+        </div>
+        <div class="version">Prototype · not for real exams</div>
+      </footer>
+    </section>
+  </main>
+
+  <dialog id="simple-dialog">
+    <form method="dialog">
+      <h2 id="dialog-title">Dialog</h2>
+      <p id="dialog-text"></p>
+      <div class="dialog-actions">
+        <button value="cancel">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
