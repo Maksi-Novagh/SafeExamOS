@@ -115,3 +115,10 @@ The first two amd64 build runs successfully produced an ISO, but the verificatio
 The verifier now queries `/live` directly with `xorriso -ls /live` and checks for the live filesystem, kernel and initrd by filename class.
 
 Lesson: CI checks must validate the intended property with the narrowest stable interface available, and build success must be distinguished from verifier failure.
+
+
+### 2026-10-27 — checksum path false negative
+
+The ISO structure check then passed and showed the expected live filesystem, kernel and initrd. The job still failed because the generated SHA-256 file contained the absolute build-container path (`/workspace/...`). The verification step runs from the artifact directory, where that absolute path does not exist.
+
+The build now creates the checksum from inside the output directory so the checksum file contains only `SafeExamOS-amd64.iso`. This keeps the checksum portable between the build container, GitHub artifact storage and the verification job.

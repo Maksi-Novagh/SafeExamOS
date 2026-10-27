@@ -44,6 +44,9 @@ if [ -z "$IMAGE" ]; then
 fi
 
 cp "$IMAGE" "$OUT_DIR/SafeExamOS-amd64.iso"
-sha256sum "$OUT_DIR/SafeExamOS-amd64.iso" > "$OUT_DIR/SafeExamOS-amd64.iso.sha256"
+(
+  cd "$OUT_DIR"
+  sha256sum "SafeExamOS-amd64.iso" > "SafeExamOS-amd64.iso.sha256"
+)
 
 echo "SafeExamOS prototype image: $OUT_DIR/SafeExamOS-amd64.iso"
