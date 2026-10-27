@@ -191,3 +191,12 @@ Run #8 did not reach the guest graphical session. The host-side graphical smoke 
 This was a CI dependency omission, not a SafeExamOS graphical runtime failure.
 
 The graphical job now installs `socat` explicitly together with QEMU and xorriso before starting the VM.
+
+
+### 2026-10-27 — graphical smoke test image-conversion dependency failure
+
+Run #9 again stopped before starting QEMU because the host-side script required ImageMagick's `convert` and `identify` commands.
+
+Those tools were unnecessary for the property being tested: QEMU's `screendump` command already writes a PPM framebuffer image directly. The graphical smoke test now validates the PPM header itself and uploads that raw capture, removing the ImageMagick dependency entirely.
+
+This keeps the CI surface smaller and avoids another host-tooling false negative.

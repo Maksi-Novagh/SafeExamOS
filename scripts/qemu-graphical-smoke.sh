@@ -7,7 +7,7 @@ if [ -z "$ISO" ] || [ ! -s "$ISO" ]; then
   exit 2
 fi
 
-for cmd in qemu-system-x86_64 xorriso socat convert identify; do
+for cmd in qemu-system-x86_64 xorriso socat; do
   command -v "$cmd" >/dev/null 2>&1 || {
     echo "error: required command not found: $cmd" >&2
     exit 1
@@ -18,11 +18,10 @@ mkdir -p .ci/qemu-ui
 LOG=.ci/qemu-ui/serial.log
 MON=.ci/qemu-ui/monitor.sock
 PPM=.ci/qemu-ui/safeexamos-ui.ppm
-PNG=.ci/qemu-ui/safeexamos-ui.png
 KERNEL=.ci/qemu-ui/vmlinuz
 INITRD=.ci/qemu-ui/initrd.img
 
-rm -f "$LOG" "$MON" "$PPM" "$PNG" "$KERNEL" "$INITRD"
+rm -f "$LOG" "$MON" "$PPM" "$KERNEL" "$INITRD"
 
 xorriso -osirrox on -indev "$ISO"   -extract /live/vmlinuz "$KERNEL"   -extract /live/initrd.img "$INITRD" >/dev/null 2>&1
 
@@ -68,16 +67,11 @@ printf 'screendump %s\n' "$PPM" | socat - "UNIX-CONNECT:$MON" >/dev/null
 sleep 1
 
 test -s "$PPM"
-convert "$PPM" "$PNG"
-test -s "$PNG"
+header=$(head -n 3 "$PPM" | tr "\n" " ")
+printf '%s\n' "$header" | grep -Eq '^P6 [0-9]+ [0-9]+ 255 ' || {
+  echo "error: invalid PPM framebuffer header: $header" >&2
+  exit 1
+}
 
-dimensions=$(identify -format '%wx%h' "$PNG")
-case "$dimensions" in
-  0x*|*x0|"")
-    echo "error: invalid framebuffer dimensions: $dimensions" >&2
-    exit 1
-    ;;
-esac
-
-echo "Captured graphical framebuffer: $PNG ($dimensions)"
+echo "Captured graphical framebuffer: $PPM"
 echo "QEMU graphical smoke test: PASS"
