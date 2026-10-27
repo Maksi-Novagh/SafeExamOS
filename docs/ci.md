@@ -101,3 +101,17 @@ Planned:
 - arm64 emulation/build;
 - reproducibility checks;
 - SBOM and provenance generation.
+
+
+## CI incident notes
+
+### 2026-10-27 — ISO verifier false negatives
+
+The first two amd64 build runs successfully produced an ISO, but the verification step failed for tooling reasons:
+
+1. the first verifier used an invalid `xorriso -find ... -print` form for the runner's xorriso version;
+2. the second verifier assumed exact path formatting from a generic ISO tree listing and produced another false negative.
+
+The verifier now queries `/live` directly with `xorriso -ls /live` and checks for the live filesystem, kernel and initrd by filename class.
+
+Lesson: CI checks must validate the intended property with the narrowest stable interface available, and build success must be distinguished from verifier failure.
