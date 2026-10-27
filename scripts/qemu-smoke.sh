@@ -7,38 +7,39 @@ if [ -z "$ISO" ] || [ ! -s "$ISO" ]; then
   exit 2
 fi
 
-mkdir -p .ci
-LOG=.ci/qemu-serial.log
-rm -f "$LOG"
-
-OVMF_CODE=""
-for f in   /usr/share/OVMF/OVMF_CODE_4M.fd   /usr/share/OVMF/OVMF_CODE.fd   /usr/share/ovmf/OVMF.fd
-do
-  if [ -r "$f" ]; then
-    OVMF_CODE=$f
-    break
-  fi
+for cmd in qemu-system-x86_64 xorriso; do
+  command -v "$cmd" >/dev/null 2>&1 || {
+    echo "error: required command not found: $cmd" >&2
+    exit 1
+  }
 done
 
-if [ -z "$OVMF_CODE" ]; then
-  echo "error: OVMF firmware not found" >&2
-  exit 1
-fi
+mkdir -p .ci/qemu-root
+LOG=.ci/qemu-serial.log
+KERNEL=.ci/qemu-root/vmlinuz
+INITRD=.ci/qemu-root/initrd.img
+rm -f "$LOG" "$KERNEL" "$INITRD"
 
-echo "Booting SafeExamOS under QEMU..."
-echo "UEFI: $OVMF_CODE"
+echo "Extracting kernel and initrd from ISO..."
+xorriso -osirrox on -indev "$ISO"   -extract /live/vmlinuz "$KERNEL"   -extract /live/initrd.img "$INITRD" >/dev/null 2>&1
+
+test -s "$KERNEL"
+test -s "$INITRD"
+
+echo "Booting SafeExamOS userspace under QEMU..."
+echo "Mode: direct kernel/initrd smoke test"
 
 set +e
-timeout 180 qemu-system-x86_64   -machine q35,accel=tcg   -cpu max   -m 2048   -smp 2   -drive "if=pflash,format=raw,readonly=on,file=$OVMF_CODE"   -cdrom "$ISO"   -boot d   -device virtio-net-pci,netdev=n0   -netdev user,id=n0   -display none   -serial "file:$LOG"   -no-reboot
+timeout 180 qemu-system-x86_64   -machine q35,accel=tcg   -cpu max   -m 2048   -smp 2   -kernel "$KERNEL"   -initrd "$INITRD"   -append "boot=live components quiet console=ttyS0,115200n8 username=exam hostname=safeexamos locales=en_US.UTF-8 keyboard-layouts=us"   -drive "file=$ISO,media=cdrom,readonly=on,format=raw"   -device virtio-net-pci,netdev=n0   -netdev user,id=n0   -display none   -serial "file:$LOG"   -no-reboot
 RC=$?
 set -e
 
 if grep -q 'SAFEEXAMOS_CI_BOOT_OK' "$LOG"; then
-  echo "QEMU boot smoke test: PASS"
+  echo "QEMU userspace smoke test: PASS"
   exit 0
 fi
 
 echo "error: guest never emitted SAFEEXAMOS_CI_BOOT_OK" >&2
 echo "qemu exit code: $RC" >&2
-tail -n 120 "$LOG" >&2 || true
+tail -n 160 "$LOG" >&2 || true
 exit 1

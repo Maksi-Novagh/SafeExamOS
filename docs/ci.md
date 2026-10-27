@@ -122,3 +122,17 @@ Lesson: CI checks must validate the intended property with the narrowest stable 
 The ISO structure check then passed and showed the expected live filesystem, kernel and initrd. The job still failed because the generated SHA-256 file contained the absolute build-container path (`/workspace/...`). The verification step runs from the artifact directory, where that absolute path does not exist.
 
 The build now creates the checksum from inside the output directory so the checksum file contains only `SafeExamOS-amd64.iso`. This keeps the checksum portable between the build container, GitHub artifact storage and the verification job.
+
+
+### 2026-10-27 — UEFI serial smoke test stalled before kernel handoff
+
+Run #6 successfully completed the static checks, built the ISO, verified the ISO structure and uploaded the artifact. The QEMU smoke test then timed out.
+
+The serial log showed OVMF loading and starting the SafeExamOS DVD boot entry, but no kernel output or SafeExamOS marker. This means the test was blocked in the graphical/bootloader path before the Linux kernel took over the serial console.
+
+To avoid conflating two different properties, CI now separates them conceptually:
+
+- the ISO verifier confirms that the image contains the expected bootable hybrid structure, live filesystem, kernel and initrd;
+- the QEMU userspace smoke test extracts the exact kernel and initrd from that ISO and boots them directly with the ISO attached as the live medium.
+
+This proves that the produced SafeExamOS live filesystem can reach systemd userspace and emit the CI marker. It does **not** by itself prove that the graphical UEFI boot menu automatically reaches the kernel. A dedicated UEFI/bootloader automation test remains a separate future milestone.
