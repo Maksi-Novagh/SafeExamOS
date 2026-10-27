@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+chmod 0755 /usr/local/sbin/safeexamos-ci-boot-marker
+systemctl enable safeexamos-ci-boot-marker.service

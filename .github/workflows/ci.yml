@@ -1,0 +1,111 @@
+name: SafeExamOS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: safeexamos-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: Static checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Shell syntax
+        run: |
+          set -eux
+          find build scripts -type f -name '*.sh' -print0 2>/dev/null | xargs -0 -r -n1 sh -n
+          find build -type f -name '*.hook.chroot' -print0 | xargs -0 -r -n1 sh -n
+
+      - name: Validate required project documentation
+        run: |
+          set -eux
+          for f in             README.md             ROADMAP.md             SECURITY.md             CONTRIBUTING.md             docs/architecture.md             docs/threat-model.md             docs/seb-compatibility.md             docs/hardware-support.md             docs/design-system.md             docs/development-policy.md             docs/build-amd64.md
+          do
+            test -s "$f"
+          done
+
+      - name: Validate UI design tokens
+        run: ./scripts/check-ui-direction.sh
+
+      - name: Validate build tree
+        run: ./scripts/check-build-tree.sh
+
+  build-amd64:
+    name: Build amd64 live ISO
+    needs: static
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build in Debian 13
+        run: |
+          set -eux
+          docker run --rm --privileged             -v "$PWD:/workspace"             -w /workspace             debian:trixie-slim             bash -lc '
+              set -eux
+              apt-get update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends                 live-build ca-certificates xorriso squashfs-tools dosfstools mtools
+              ./build/amd64/build.sh
+            '
+
+      - name: Verify ISO structure
+        run: |
+          set -eux
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends xorriso
+          ./scripts/check-iso.sh build/amd64/out/SafeExamOS-amd64.iso
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: SafeExamOS-amd64-${{ github.sha }}
+          path: |
+            build/amd64/out/SafeExamOS-amd64.iso
+            build/amd64/out/SafeExamOS-amd64.iso.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+  qemu-smoke:
+    name: QEMU boot smoke test
+    needs: build-amd64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download ISO artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: SafeExamOS-amd64-${{ github.sha }}
+          path: build/amd64/out
+
+      - name: Install QEMU
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends qemu-system-x86 ovmf
+
+      - name: Boot SafeExamOS
+        run: ./scripts/qemu-smoke.sh build/amd64/out/SafeExamOS-amd64.iso
+
+      - name: Upload QEMU serial log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qemu-serial-${{ github.sha }}
+          path: .ci/qemu-serial.log
+          if-no-files-found: warn
+          retention-days: 14

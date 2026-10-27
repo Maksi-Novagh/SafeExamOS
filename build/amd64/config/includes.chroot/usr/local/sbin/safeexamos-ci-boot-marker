@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+MARKER='SAFEEXAMOS_CI_BOOT_OK'
+
+printf '%s\n' "$MARKER" > /dev/ttyS0 2>/dev/null || true
+mkdir -p /run/safeexamos
+printf '%s\n' "$MARKER" > /run/safeexamos/ci-boot-ok
