@@ -10,7 +10,7 @@ while [ "$(date +%s)" -lt "$deadline" ]; do
   if [ -n "$cage_pid" ] && [ -n "$chromium_pid" ]; then
     cmdline=$(tr '\0' ' ' < "/proc/$chromium_pid/cmdline" 2>/dev/null || true)
     case "$cmdline" in
-      *"/usr/share/safeexamos/launcher/index.html"*)
+      *"/launcher/index.html"*)
         printf '%s\n' 'SAFEEXAMOS_CI_UI_OK' > /dev/ttyS0 2>/dev/null || true
         mkdir -p /run/safeexamos
         printf '%s\n' 'SAFEEXAMOS_CI_UI_OK' > /run/safeexamos/ci-ui-ok

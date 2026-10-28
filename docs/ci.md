@@ -261,3 +261,14 @@ Validated:
 - serial log and framebuffer were uploaded as CI artifacts.
 
 This is the first automated proof that the generated SafeExamOS image can reach the graphical launcher in the QEMU test environment.
+
+
+### 2026-10-28 — graphical marker path changed by runtime pre-flight launcher
+
+Run #16 built and booted successfully, but the graphical smoke test timed out after the pre-flight integration.
+
+The reason was a CI observer mismatch: Chromium now loads the launcher from the kiosk runtime directory (for example `/run/.../launcher/index.html`) so that `preflight.js` can be generated beside it. The CI observer still required the old static path `/usr/share/safeexamos/launcher/index.html`.
+
+The observer now accepts the runtime launcher path suffix `/launcher/index.html`.
+
+The session also emits `SAFEEXAMOS_PREFLIGHT_OK` or `SAFEEXAMOS_PREFLIGHT_ERROR` before Cage starts, making future collector failures directly visible in the serial log.
