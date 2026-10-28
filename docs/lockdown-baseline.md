@@ -38,7 +38,15 @@ The image currently:
 - masks `debug-shell.service`;
 - masks `ctrl-alt-del.target`;
 - runs the graphical session as the unprivileged `exam` user;
-- restarts the kiosk service on failure.
+- restarts the kiosk service on failure;
+- applies `NoNewPrivileges`;
+- uses a private `/tmp`;
+- protects the user's home from the service;
+- prevents writes to kernel tunables/modules/cgroups through the kiosk service;
+- forbids acquiring SUID/SGID privilege;
+- locks process personality changes;
+- forbids realtime scheduling;
+- applies a restrictive `077` umask.
 
 ## Remaining critical work
 
