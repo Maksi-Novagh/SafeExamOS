@@ -2,5 +2,17 @@
 set -eu
 
 chmod 0755 /usr/local/bin/safeexamos-session
+
+if ! id exam >/dev/null 2>&1; then
+  useradd --create-home --shell /bin/bash exam
+fi
+
+for group in video render input audio netdev plugdev; do
+  if getent group "$group" >/dev/null 2>&1; then
+    usermod -a -G "$group" exam
+  fi
+done
+
+passwd -l exam >/dev/null 2>&1 || true
 systemctl disable getty@tty1.service 2>/dev/null || true
 systemctl enable safeexamos-kiosk.service
