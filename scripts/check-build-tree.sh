@@ -19,6 +19,8 @@ build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-boot-marker
 build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-ci-ui-marker.service
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-ui-marker
 scripts/report-image-metrics.sh
+scripts/report-runtime-metrics.sh
+scripts/collect-hardware-report.sh
 hardware/profiles/qemu-amd64.json
 hardware/profiles/lenovo-v15-g2-alc-82kd.json
 docs/release-target-2026-11-04.md

@@ -42,6 +42,15 @@ Still to discover on physical hardware before certification:
 - DRM connector behavior;
 - battery/power reporting.
 
+Hardware report helper:
+
+```sh
+./scripts/collect-hardware-report.sh
+./scripts/report-runtime-metrics.sh
+```
+
+The first script captures PCI/USB IDs, drivers, DRM outputs, input handlers, network devices and power information. The second captures boot timing, memory/process usage and enabled/running services.
+
 Required physical validation:
 
 - UEFI boot;
