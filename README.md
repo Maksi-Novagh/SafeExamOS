@@ -30,6 +30,8 @@ The repository remains documentation-first: implementation, tests and documentat
 
 Latest pre-flight work (validation pending): keyboard typing test and a local `Supported / Warning / Blocking` compatibility verdict. Interactive Wi-Fi joining and system-level keyboard-layout switching are still pending.
 
+Current one-week target (2026-11-04): full prototype acceptance on the QEMU amd64 reference VM and Lenovo V15 G2 ALC (82KD), plus broad amd64 feature coverage. See the release-target document for exact pass/fail criteria.
+
 ## Target workflow
 
 ```text
@@ -137,6 +139,7 @@ Key upstream observations:
 - [Graphical session](docs/graphical-session.md)
 - [CI verification](docs/ci.md)
 - [Image optimization](docs/image-optimization.md)
+- [Release target — 2026-11-04](docs/release-target-2026-11-04.md)
 - [Proctoring and privacy](docs/proctoring-and-privacy.md)
 - [Research baseline](docs/research/2026-10-27-seb-baseline.md)
 - [Roadmap](ROADMAP.md)

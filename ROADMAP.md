@@ -17,6 +17,18 @@ This roadmap is deliberately evidence-driven. A checkbox only means the item is 
 - [ ] Validate SEB Server protocol behavior in a lab
 - [ ] Validate Browser Exam Key / Config Key behavior without claiming compatibility prematurely
 
+## One-week reference target — 2026-11-04
+
+- [x] Define QEMU amd64 reference profile
+- [x] Define Lenovo V15 G2 ALC (82KD) target profile
+- [ ] Validate optimized ISO in QEMU after image trimming
+- [ ] Collect Lenovo hardware IDs from physical boot
+- [ ] Validate Lenovo display/keyboard/touchpad/Wi-Fi
+- [ ] Validate clean shutdown and ephemeral-state destruction
+- [ ] Reach 100% reference acceptance checklist on QEMU
+- [ ] Reach 100% reference acceptance checklist on Lenovo 82KD
+- [ ] Reach planned general amd64 feature-coverage target
+
 ## Phase 1 — Bootable proof of concept
 
 - [ ] Reproducible amd64 image build

@@ -1,0 +1,34 @@
+{
+  "profile_version": 1,
+  "id": "lenovo-v15-g2-alc-82kd",
+  "name": "Lenovo V15 G2 ALC (82KD)",
+  "architecture": "amd64",
+  "status": "target-unvalidated",
+  "known": {
+    "cpu": "AMD Ryzen 5 5500U",
+    "graphics": "AMD integrated Radeon/Vega",
+    "memory_mib": 20480
+  },
+  "discover_on_hardware": [
+    "wifi_pci_id",
+    "wifi_driver",
+    "ethernet_pci_id",
+    "input_devices",
+    "touchpad",
+    "drm_connectors",
+    "uefi_mode",
+    "battery",
+    "audio"
+  ],
+  "validation": {
+    "boot": false,
+    "internal_display": false,
+    "keyboard": false,
+    "touchpad": false,
+    "wifi": false,
+    "chromium": false,
+    "cage": false,
+    "ephemeral_session": false,
+    "shutdown": false
+  }
+}

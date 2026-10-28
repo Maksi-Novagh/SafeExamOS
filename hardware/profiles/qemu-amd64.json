@@ -1,0 +1,22 @@
+{
+  "profile_version": 1,
+  "id": "qemu-amd64-reference",
+  "name": "QEMU amd64 reference VM",
+  "architecture": "amd64",
+  "status": "reference",
+  "expected": {
+    "boot": "direct-kernel-ci",
+    "memory_mib_min": 2048,
+    "display": "virtio-vga",
+    "network": "virtio-net-pci",
+    "input": "qemu-standard",
+    "browser": "chromium",
+    "compositor": "cage"
+  },
+  "validation": {
+    "userspace_boot": true,
+    "graphical_launcher": true,
+    "framebuffer_capture": true,
+    "physical_input": false
+  }
+}

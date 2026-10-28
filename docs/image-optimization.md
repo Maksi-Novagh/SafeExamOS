@@ -73,3 +73,20 @@ For every optimization milestone, record:
 - hardware regressions, if any.
 
 The current project should prefer a slightly larger reliable image over an aggressively stripped image that only works in QEMU.
+
+
+## Measurement tool
+
+Use:
+
+```sh
+./scripts/report-image-metrics.sh build/amd64/out/SafeExamOS-amd64.iso
+```
+
+The report currently records:
+
+- ISO bytes/MiB;
+- SquashFS bytes/MiB;
+- package-entry count from `/live/filesystem.packages`.
+
+Boot timing, memory and enabled-service measurements will be added as runtime metrics once the optimized image has been validated.

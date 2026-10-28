@@ -177,3 +177,15 @@ Current amd64 prototype:
 - basic ephemeral-root detection.
 
 The collector deliberately does not yet classify a device as certified/supported/unsupported. That requires the hardware support database and policy layer.
+
+
+## Reference profiles
+
+Machine-specific validation data lives under `hardware/profiles/`.
+
+Current reference profiles:
+
+- `qemu-amd64.json`: automated virtual reference target;
+- `lenovo-v15-g2-alc-82kd.json`: physical development target.
+
+The Lenovo profile intentionally leaves Wi-Fi, Ethernet, input and DRM identifiers unknown until they are collected from SafeExamOS running on the actual laptop. Marketing-model assumptions are not accepted as certification evidence.
