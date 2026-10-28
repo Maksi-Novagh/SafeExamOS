@@ -306,3 +306,12 @@ Validated in the same generated amd64 ISO:
 The guest serial log contained `SAFEEXAMOS_CI_BOOT_OK` and `SAFEEXAMOS_CI_UI_OK`. QEMU stderr only contained the expected termination message from the CI harness after the successful capture.
 
 This is the first successful CI run after integrating the live pre-flight data path into the launcher.
+
+
+### 2026-10-28 — apt-recommends optimization removed live-user setup
+
+After `--apt-recommends false` was enabled, graphical runs intermittently reached the Debian login prompt without starting the SafeExamOS kiosk. The missing dependency was `user-setup`, which had previously arrived indirectly and is required by the Debian Live configuration path that creates the configured live user.
+
+SafeExamOS now lists `user-setup` explicitly in the amd64 package list and the static build-tree check requires it.
+
+This is an optimization regression: the runtime feature was valid before dependency pruning, but an implicit package dependency was removed by the image-size pass.

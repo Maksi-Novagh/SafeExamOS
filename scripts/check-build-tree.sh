@@ -35,7 +35,54 @@ done
 
 grep -Eq '^cage$' build/amd64/config/package-lists/safeexamos.list.chroot
 grep -Eq '^chromium$' build/amd64/config/package-lists/safeexamos.list.chroot
-grep -Eq '^network-manager$' build/amd64/config/package-lists/safeexamos.list.chroot
+grep -Eq '^network-manager
+if grep -Eq 'exec cage .* -s([[:space:]]|$)' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
+  echo "error: Cage VT switching (-s) must not be enabled in the exam session" >&2
+  exit 1
+fi
+
+if grep -Eq 'chromium .*--no-sandbox' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
+  echo "error: Chromium sandbox must not be disabled" >&2
+  exit 1
+fi
+
+echo "Build tree check: PASS"
+
+
+if ! grep -q -- '--app="$LAUNCHER"' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
+  echo "error: Chromium must launch the exam surface in app mode" >&2
+  exit 1
+fi
+
+if grep -q -- '--kiosk' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
+  echo "error: legacy Chromium kiosk mode must not replace the single-surface app-mode launcher" >&2
+  exit 1
+fi
+ build/amd64/config/package-lists/safeexamos.list.chroot
+grep -Eq '^user-setup
+if grep -Eq 'exec cage .* -s([[:space:]]|$)' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
+  echo "error: Cage VT switching (-s) must not be enabled in the exam session" >&2
+  exit 1
+fi
+
+if grep -Eq 'chromium .*--no-sandbox' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
+  echo "error: Chromium sandbox must not be disabled" >&2
+  exit 1
+fi
+
+echo "Build tree check: PASS"
+
+
+if ! grep -q -- '--app="$LAUNCHER"' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
+  echo "error: Chromium must launch the exam surface in app mode" >&2
+  exit 1
+fi
+
+if grep -q -- '--kiosk' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
+  echo "error: legacy Chromium kiosk mode must not replace the single-surface app-mode launcher" >&2
+  exit 1
+fi
+ build/amd64/config/package-lists/safeexamos.list.chroot
 
 if grep -Eq 'exec cage .* -s([[:space:]]|$)' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
   echo "error: Cage VT switching (-s) must not be enabled in the exam session" >&2
