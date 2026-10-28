@@ -241,3 +241,23 @@ The old shell-profile bootstrap file had correctly been removed, but `0100-safee
 Because the hook runs with `set -e`, the missing file aborted `live-build`.
 
 The stale chmod was removed. This was a refactor cleanup bug, not a runtime failure of the new systemd kiosk service.
+
+
+### 2026-10-28 — first successful graphical QEMU smoke test
+
+Run #13 was the first fully successful graphical CI run.
+
+Validated:
+
+- static checks passed;
+- amd64 ISO build passed;
+- ISO structure and checksum validation passed;
+- QEMU userspace boot passed;
+- `safeexamos-kiosk.service` started the graphical session;
+- Cage and Chromium stayed alive;
+- the launcher URL was present in Chromium's command line;
+- the guest emitted `SAFEEXAMOS_CI_UI_OK`;
+- QEMU captured the framebuffer to `.ci/qemu-ui/safeexamos-ui.ppm`;
+- serial log and framebuffer were uploaded as CI artifacts.
+
+This is the first automated proof that the generated SafeExamOS image can reach the graphical launcher in the QEMU test environment.
