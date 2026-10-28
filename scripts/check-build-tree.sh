@@ -10,6 +10,7 @@ build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session
 build/amd64/config/includes.chroot/usr/share/safeexamos/launcher/index.html
 build/amd64/config/hooks/live/0100-safeexamos-permissions.hook.chroot
 build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-ci-boot-marker.service
+build/amd64/config/includes.chroot/etc/systemd/system/getty@tty1.service.d/autologin.conf
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-boot-marker
 build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-ci-ui-marker.service
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-ui-marker

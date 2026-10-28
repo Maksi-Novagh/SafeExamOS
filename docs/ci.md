@@ -200,3 +200,20 @@ Run #9 again stopped before starting QEMU because the host-side script required 
 Those tools were unnecessary for the property being tested: QEMU's `screendump` command already writes a PPM framebuffer image directly. The graphical smoke test now validates the PPM header itself and uploads that raw capture, removing the ImageMagick dependency entirely.
 
 This keeps the CI surface smaller and avoids another host-tooling false negative.
+
+
+### 2026-10-28 — graphical session stopped at tty1 login
+
+Run #10 was the first graphical smoke run to reach the SafeExamOS guest itself. The serial log showed:
+
+```text
+SAFEEXAMOS_CI_BOOT_OK
+Debian GNU/Linux 13 safeexamos ttyS0
+safeexamos login:
+```
+
+The live system was healthy, but the kiosk session never started because the prototype only launches `safeexamos-session` from the `exam` user's login profile, and no automatic login was configured on `tty1`.
+
+The image now installs a systemd getty override for `tty1` using `agetty --autologin exam`. This allows the prototype's login/PAM session to start and immediately hand off to Cage and Chromium.
+
+This is a prototype bootstrap mechanism. The production design should replace profile-based autostart with a dedicated kiosk session unit that cannot fall back to an interactive shell.
