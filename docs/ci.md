@@ -344,3 +344,17 @@ The validator was rebuilt from scratch with a single canonical structure and now
 - legacy kiosk flag is absent;
 - managed browser policy exists;
 - logind automatic VTs are disabled.
+
+
+### 2026-10-28 — kiosk service does not reach ExecStart
+
+Run #37 still reached userspace but emitted no `SAFEEXAMOS_SESSION_START`, even after the `exam` user was pre-created during image construction.
+
+The remaining failure is therefore before `safeexamos-session`: systemd service activation, unit conditions, PAM/session setup, or tty ownership.
+
+Two changes were made:
+
+- `getty@tty1.service` is now **masked**, not merely disabled, so it cannot race with the kiosk service which explicitly conflicts with it;
+- the CI boot marker now prints the `exam` user state, kiosk enabled/active/failed state, full kiosk status, kiosk journal, and tty1 getty status to the serial log.
+
+This turns the next graphical failure into a directly diagnosable systemd failure instead of a 150-second timeout.

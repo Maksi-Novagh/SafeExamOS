@@ -6,3 +6,26 @@ MARKER='SAFEEXAMOS_CI_BOOT_OK'
 printf '%s\n' "$MARKER" > /dev/ttyS0 2>/dev/null || true
 mkdir -p /run/safeexamos
 printf '%s\n' "$MARKER" > /run/safeexamos/ci-boot-ok
+
+{
+  echo 'SAFEEXAMOS_CI_DIAG_BEGIN'
+  if id exam >/dev/null 2>&1; then
+    echo 'SAFEEXAMOS_CI_EXAM_USER_OK'
+    id exam || true
+  else
+    echo 'SAFEEXAMOS_CI_EXAM_USER_MISSING'
+  fi
+  printf 'SAFEEXAMOS_CI_KIOSK_ENABLED='
+  systemctl is-enabled safeexamos-kiosk.service 2>/dev/null || true
+  printf 'SAFEEXAMOS_CI_KIOSK_ACTIVE='
+  systemctl is-active safeexamos-kiosk.service 2>/dev/null || true
+  printf 'SAFEEXAMOS_CI_KIOSK_FAILED='
+  systemctl is-failed safeexamos-kiosk.service 2>/dev/null || true
+  echo '--- kiosk status ---'
+  systemctl status safeexamos-kiosk.service --no-pager -l 2>&1 || true
+  echo '--- kiosk journal ---'
+  journalctl -u safeexamos-kiosk.service -b --no-pager -n 80 2>&1 || true
+  echo '--- tty1 getty ---'
+  systemctl status getty@tty1.service --no-pager -l 2>&1 || true
+  echo 'SAFEEXAMOS_CI_DIAG_END'
+} > /dev/ttyS0 2>/dev/null || true

@@ -14,5 +14,5 @@ for group in video render input audio netdev plugdev; do
 done
 
 passwd -l exam >/dev/null 2>&1 || true
-systemctl disable getty@tty1.service 2>/dev/null || true
+systemctl mask getty@tty1.service >/dev/null 2>&1 || true
 systemctl enable safeexamos-kiosk.service
