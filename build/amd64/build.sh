@@ -26,7 +26,8 @@ lb config noauto \
   --binary-images iso-hybrid \
   --debian-installer none \
   --archive-areas "main contrib non-free-firmware" \
-  --apt-recommends true \
+  --apt-recommends false \
+  --apt-source-archives false \
   --memtest none \
   --iso-application "SafeExamOS" \
   --iso-publisher "SafeExamOS community project" \
