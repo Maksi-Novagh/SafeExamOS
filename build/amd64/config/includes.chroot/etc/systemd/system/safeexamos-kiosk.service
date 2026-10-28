@@ -1,7 +1,7 @@
 [Unit]
 Description=SafeExamOS kiosk session
-After=systemd-user-sessions.service systemd-logind.service NetworkManager.service
-Wants=systemd-logind.service
+After=live-config.service systemd-user-sessions.service systemd-logind.service NetworkManager.service
+Wants=live-config.service systemd-logind.service
 Conflicts=getty@tty1.service
 ConditionPathExists=/dev/tty1
 
