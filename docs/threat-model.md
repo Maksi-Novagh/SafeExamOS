@@ -217,6 +217,10 @@ SafeExamOS therefore treats these as threats too:
 
 See [proctoring-and-privacy.md](proctoring-and-privacy.md).
 
+## Escape and cheating catalog
+
+The exhaustive defensive backlog lives in [escape-and-cheating-catalog.md](escape-and-cheating-catalog.md). It enumerates browser, session, device, network, storage, boot, virtualization, physical and audit attack classes without providing operational bypass instructions.
+
 ## Testing model
 
 Security tests should be written as reproducible lab tests:
