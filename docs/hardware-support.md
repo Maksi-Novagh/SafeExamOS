@@ -44,7 +44,9 @@ A critical component such as display, input, boot, or network is not functional.
 
 ## Pre-flight inventory
 
-Before lockdown, collect:
+A first local collector is implemented in `/usr/local/sbin/safeexamos-preflight`. It currently detects a subset of the target inventory and displays it in the launcher. It is detection-only; configuration/repair actions come later.
+
+Before lockdown, the target inventory is:
 
 - CPU architecture/model;
 - firmware/UEFI mode;
@@ -155,3 +157,23 @@ Proposed record:
 ```
 
 Community reports should never automatically become "certified" without reproducible validation.
+
+
+## Implemented pre-flight subset
+
+Current amd64 prototype:
+
+- CPU model and architecture;
+- kernel version;
+- total RAM;
+- first detected PCI graphics/display controller;
+- default route and NetworkManager state;
+- network interface names;
+- Wi-Fi interface names;
+- configured keyboard layout;
+- Linux input-device count;
+- connected DRM output count/names;
+- UEFI vs legacy BIOS detection;
+- basic ephemeral-root detection.
+
+The collector deliberately does not yet classify a device as certified/supported/unsupported. That requires the hardware support database and policy layer.

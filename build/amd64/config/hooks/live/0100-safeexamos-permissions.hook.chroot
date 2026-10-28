@@ -2,6 +2,7 @@
 set -eu
 
 chmod 0755 /usr/local/bin/safeexamos-session
+chmod 0755 /usr/local/sbin/safeexamos-preflight
 systemctl enable NetworkManager.service
 cat > /etc/sysctl.d/60-safeexamos-prototype.conf <<'EOF'
 kernel.sysrq = 0

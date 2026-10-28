@@ -1,4 +1,76 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SafeExamOS</title><style>
-:root{font-family:"Segoe UI","Noto Sans","Liberation Sans",sans-serif;color:#000;background:#f0f0f0}*{box-sizing:border-box}body{margin:0;background:#f0f0f0;font-size:14px}main{min-height:100vh;display:grid;place-items:center;padding:24px}.window{width:min(760px,100%);background:#fff;border:1px solid dodgerblue}header,.panel,footer,.notice{padding:18px 20px}header{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid #ddd}h1{font-size:24px;margin:0;font-weight:600}h2{font-size:16px;margin:0 0 14px}.product,.muted{color:dimgray}.product{font-size:12px;margin-bottom:4px}.notice{font-size:12px;color:dimgray;background:#f8f8f8;border-bottom:1px solid #ddd}.panel{border-bottom:1px solid #ddd}.row{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}.actions{display:grid;grid-template-columns:1fr auto;gap:8px}input,button{font:inherit}input{min-height:36px;padding:7px 9px;border:1px solid #aaa}button{min-height:34px;padding:6px 12px;border:1px solid transparent;background:transparent;cursor:pointer}button:hover{background:lightblue;border-color:dodgerblue}button:focus-visible,input:focus-visible{outline:2px solid dodgerblue;outline-offset:2px}button.primary{background:dodgerblue;border-color:dodgerblue;color:#fff;font-weight:600}.checks{list-style:none;padding:0;margin:0;border-top:1px solid #e4e4e4}.checks li{display:grid;grid-template-columns:28px 170px 1fr;gap:8px;min-height:40px;align-items:center;border-bottom:1px solid #e4e4e4}.ok{color:#2f7d32;font-weight:700;text-align:center}footer{display:flex;justify-content:space-between;gap:12px;background:#f0f0f0}.status{border:1px solid #2f7d32;padding:5px 8px;font-size:12px;align-self:flex-start}@media(max-width:620px){main{padding:8px}.row,.actions{grid-template-columns:1fr}.checks li{grid-template-columns:28px 1fr}.checks .detail{grid-column:2}header,footer{flex-direction:column}}
-</style></head><body><main><section class="window"><header><div><div class="product">SafeExamOS</div><h1>Start an examination</h1></div><div class="status">System ready</div></header><div class="notice">Prototype image · independent community project · not for real examinations</div><section class="panel"><h2>Exam configuration</h2><div class="row"><label for="code">Exam code</label><div class="actions"><input id="code" placeholder="Enter exam code" autocomplete="off"><button class="primary" id="continue" type="button">Continue</button></div></div></section><section class="panel"><h2>System check</h2><ul class="checks"><li><span class="ok">✓</span><strong>Session</strong><span class="detail muted">Ephemeral live environment</span></li><li><span class="ok">✓</span><strong>Browser</strong><span class="detail muted">Chromium kiosk prototype</span></li><li><span class="ok">✓</span><strong>Display</strong><span class="detail muted">Wayland / Cage</span></li><li><span class="ok">✓</span><strong>Network service</strong><span class="detail muted">NetworkManager available</span></li></ul></section><footer><span class="muted">SafeExamOS research build</span><span class="muted">SEB-compatible behavior not yet claimed</span></footer></section></main><script>document.getElementById('continue').addEventListener('click',function(){var f=document.getElementById('code');if(!f.value.trim()){f.focus();return;}alert('Prototype only: exam retrieval is not implemented yet.');});</script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SafeExamOS</title>
+<style>
+:root{font-family:"Segoe UI","Noto Sans","Liberation Sans",sans-serif;color:#000;background:#f0f0f0;--accent:dodgerblue;--hover:lightblue;--muted:dimgray;--ok:#2f7d32;--warn:#8a6d3b;--bad:#a94442}
+*{box-sizing:border-box}body{margin:0;background:#f0f0f0;font-size:14px}main{min-height:100vh;display:grid;place-items:center;padding:24px}.window{width:min(900px,100%);background:#fff;border:1px solid var(--accent)}header,.panel,footer,.notice{padding:18px 20px}header{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid #ddd}h1{font-size:24px;margin:0;font-weight:600}h2{font-size:16px;margin:0 0 14px}.product,.muted{color:var(--muted)}.product{font-size:12px;margin-bottom:4px}.notice{font-size:12px;color:var(--muted);background:#f8f8f8;border-bottom:1px solid #ddd}.panel{border-bottom:1px solid #ddd}.row{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}.actions{display:grid;grid-template-columns:1fr auto;gap:8px}input,button{font:inherit}input{min-height:36px;padding:7px 9px;border:1px solid #aaa}button{min-height:34px;padding:6px 12px;border:1px solid transparent;background:transparent;cursor:pointer}button:hover{background:var(--hover);border-color:var(--accent)}button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}.checks{list-style:none;padding:0;margin:0;border-top:1px solid #e4e4e4}.checks li{display:grid;grid-template-columns:28px 190px 1fr;gap:8px;min-height:40px;align-items:center;border-bottom:1px solid #e4e4e4}.indicator{font-weight:700;text-align:center}.indicator.ok{color:var(--ok)}.indicator.warn{color:var(--warn)}.indicator.bad{color:var(--bad)}footer{display:flex;justify-content:space-between;gap:12px;background:#f0f0f0}.status{border:1px solid var(--ok);padding:5px 8px;font-size:12px;align-self:flex-start}.status.warn{border-color:var(--warn)}.status.bad{border-color:var(--bad)}.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;margin-top:10px}.summary div{border-bottom:1px solid #eee;padding:6px 0}.summary strong{display:inline-block;min-width:110px}@media(max-width:680px){main{padding:8px}.row,.actions,.summary{grid-template-columns:1fr}.checks li{grid-template-columns:28px 1fr}.checks .detail{grid-column:2}header,footer{flex-direction:column}}
+</style>
+<script src="preflight.js"></script>
+</head>
+<body>
+<main>
+<section class="window">
+<header>
+<div><div class="product">SafeExamOS</div><h1>Start an examination</h1></div>
+<div class="status" id="overall-status">Checking system…</div>
+</header>
+<div class="notice">Prototype image · independent community project · not for real examinations</div>
+<section class="panel">
+<h2>Exam configuration</h2>
+<div class="row"><label for="code">Exam code</label><div class="actions"><input id="code" placeholder="Enter exam code" autocomplete="off"><button class="primary" id="continue" type="button">Continue</button></div></div>
+</section>
+<section class="panel">
+<h2>System check</h2>
+<ul class="checks">
+<li><span class="indicator" id="network-indicator">•</span><strong>Network</strong><span class="detail muted" id="network-detail">Checking…</span></li>
+<li><span class="indicator" id="keyboard-indicator">•</span><strong>Keyboard</strong><span class="detail muted" id="keyboard-detail">Checking…</span></li>
+<li><span class="indicator" id="display-indicator">•</span><strong>Display</strong><span class="detail muted" id="display-detail">Checking…</span></li>
+<li><span class="indicator" id="input-indicator">•</span><strong>Input devices</strong><span class="detail muted" id="input-detail">Checking…</span></li>
+<li><span class="indicator" id="session-indicator">•</span><strong>Session storage</strong><span class="detail muted" id="session-detail">Checking…</span></li>
+</ul>
+<div class="summary">
+<div><strong>CPU</strong><span id="cpu">—</span></div>
+<div><strong>Memory</strong><span id="memory">—</span></div>
+<div><strong>GPU</strong><span id="gpu">—</span></div>
+<div><strong>Architecture</strong><span id="arch">—</span></div>
+<div><strong>Boot</strong><span id="boot">—</span></div>
+<div><strong>Interfaces</strong><span id="interfaces">—</span></div>
+</div>
+</section>
+<footer><span class="muted" id="generated">SafeExamOS research build</span><span class="muted">SEB-compatible behavior not yet claimed</span></footer>
+</section>
+</main>
+<script>
+(function(){
+  const p=window.SAFEEXAMOS_PREFLIGHT||null;
+  function setIndicator(id,state){const e=document.getElementById(id);e.className='indicator '+state;e.textContent=state==='ok'?'✓':state==='warn'?'!':'×'}
+  if(!p){document.getElementById('overall-status').textContent='Pre-flight unavailable';document.getElementById('overall-status').className='status bad';return}
+  const online=p.network&&p.network.state==='online';
+  setIndicator('network-indicator',online?'ok':'warn');
+  document.getElementById('network-detail').textContent=(online?'Connected · ':'No default route · ')+(p.network.managerState||'unknown');
+  setIndicator('keyboard-indicator',p.keyboard&&p.keyboard.layout?'ok':'warn');
+  document.getElementById('keyboard-detail').textContent='Layout: '+((p.keyboard&&p.keyboard.layout)||'unknown');
+  setIndicator('display-indicator',p.displays&&p.displays.count>0?'ok':'warn');
+  document.getElementById('display-detail').textContent=(p.displays?p.displays.count:0)+' connected · '+((p.displays&&p.displays.outputs)||'unknown');
+  setIndicator('input-indicator',p.inputDevices>0?'ok':'warn');
+  document.getElementById('input-detail').textContent=p.inputDevices+' detected';
+  setIndicator('session-indicator',p.ephemeral==='yes'?'ok':'warn');
+  document.getElementById('session-detail').textContent=p.ephemeral==='yes'?'Ephemeral live environment':'Unable to prove ephemeral root';
+  document.getElementById('cpu').textContent=p.cpu;
+  document.getElementById('memory').textContent=p.memoryMiB+' MiB';
+  document.getElementById('gpu').textContent=p.gpu;
+  document.getElementById('arch').textContent=p.architecture+' · '+p.kernel;
+  document.getElementById('boot').textContent=p.bootMode;
+  document.getElementById('interfaces').textContent=p.network.interfaces+' · Wi-Fi: '+p.network.wifiInterfaces;
+  document.getElementById('generated').textContent='Pre-flight generated '+p.generatedAt;
+  const warnings=[!online,!(p.displays&&p.displays.count>0),p.inputDevices<1,p.ephemeral!=='yes'].filter(Boolean).length;
+  const status=document.getElementById('overall-status');
+  status.textContent=warnings?'Ready with '+warnings+' warning'+(warnings===1?'':'s'):'System ready';
+  status.className='status'+(warnings?' warn':'');
+})();
+document.getElementById('continue').addEventListener('click',function(){var f=document.getElementById('code');if(!f.value.trim()){f.focus();return;}alert('Prototype only: exam retrieval is not implemented yet.');});
+</script>
+</body></html>

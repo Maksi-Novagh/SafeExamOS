@@ -1,0 +1,97 @@
+#!/bin/sh
+set -eu
+
+OUT_DIR="${1:-/run/safeexamos-preflight}"
+mkdir -p "$OUT_DIR"
+
+json_escape() {
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g; s//\\r/g; s/
+/\\n/g'
+}
+
+first_line() {
+  sed -n '1p'
+}
+
+cpu_model=$(awk -F: '/model name|Hardware|Processor/ {gsub(/^[ 	]+/,"",$2); print $2; exit}' /proc/cpuinfo 2>/dev/null || true)
+[ -n "$cpu_model" ] || cpu_model=$(uname -m)
+
+mem_kib=$(awk '/MemTotal:/ {print $2; exit}' /proc/meminfo 2>/dev/null || echo 0)
+mem_mib=$((mem_kib / 1024))
+
+gpu=$(lspci 2>/dev/null | grep -Ei 'vga compatible controller|3d controller|display controller' | head -n 1 | sed 's/^[^ ]* //' || true)
+[ -n "$gpu" ] || gpu="Not detected"
+
+default_route=$(ip route show default 2>/dev/null | first_line || true)
+network_state="offline"
+network_detail="No default route"
+if [ -n "$default_route" ]; then
+  network_state="online"
+  network_detail="$default_route"
+fi
+
+nm_state=$(nmcli -t -f STATE general 2>/dev/null | first_line || true)
+[ -n "$nm_state" ] || nm_state="unknown"
+
+interfaces=$(ip -o link show 2>/dev/null | awk -F': ' '{print $2}' | paste -sd ',' - || true)
+[ -n "$interfaces" ] || interfaces="none"
+
+wifi_interfaces=$(nmcli -t -f DEVICE,TYPE device status 2>/dev/null | awk -F: '$2=="wifi" {print $1}' | paste -sd ',' - || true)
+[ -n "$wifi_interfaces" ] || wifi_interfaces="none"
+
+keyboard_layout="${SAFEEXAMOS_XKB_LAYOUT:-us}"
+
+input_count=$(grep -c '^N: Name=' /proc/bus/input/devices 2>/dev/null || true)
+[ -n "$input_count" ] || input_count=0
+
+display_count=0
+connected_outputs=""
+for status_file in /sys/class/drm/card*-*/status; do
+  [ -r "$status_file" ] || continue
+  if [ "$(cat "$status_file" 2>/dev/null || true)" = "connected" ]; then
+    display_count=$((display_count + 1))
+    output=$(basename "$(dirname "$status_file")")
+    if [ -n "$connected_outputs" ]; then
+      connected_outputs="$connected_outputs,$output"
+    else
+      connected_outputs="$output"
+    fi
+  fi
+done
+[ -n "$connected_outputs" ] || connected_outputs="virtual/unknown"
+
+boot_mode="BIOS"
+[ -d /sys/firmware/efi ] && boot_mode="UEFI"
+
+session_ephemeral="yes"
+findmnt -n -o FSTYPE / 2>/dev/null | grep -Eq 'overlay|squashfs' || session_ephemeral="unknown"
+
+cat > "$OUT_DIR/preflight.js" <<EOF
+window.SAFEEXAMOS_PREFLIGHT = {
+  generatedAt: "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  cpu: "$(json_escape "$cpu_model")",
+  memoryMiB: $mem_mib,
+  architecture: "$(json_escape "$(uname -m)")",
+  kernel: "$(json_escape "$(uname -r)")",
+  gpu: "$(json_escape "$gpu")",
+  network: {
+    state: "$(json_escape "$network_state")",
+    managerState: "$(json_escape "$nm_state")",
+    detail: "$(json_escape "$network_detail")",
+    interfaces: "$(json_escape "$interfaces")",
+    wifiInterfaces: "$(json_escape "$wifi_interfaces")"
+  },
+  keyboard: {
+    layout: "$(json_escape "$keyboard_layout")"
+  },
+  inputDevices: $input_count,
+  displays: {
+    count: $display_count,
+    outputs: "$(json_escape "$connected_outputs")"
+  },
+  bootMode: "$(json_escape "$boot_mode")",
+  ephemeral: "$(json_escape "$session_ephemeral")"
+};
+EOF
+
+chmod 0644 "$OUT_DIR/preflight.js"

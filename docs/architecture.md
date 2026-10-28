@@ -30,6 +30,10 @@ The first prototype may use a conventional Debian live image. Production securit
 
 ### 2. Pre-flight environment
 
+A first read-only pre-flight collector is now implemented on amd64. It runs inside the unprivileged kiosk session before Chromium starts and writes local runtime data consumed by the launcher.
+
+Current implementation reports CPU, RAM, GPU, network/default route, NetworkManager state, interfaces, keyboard layout, input count, connected DRM outputs, boot mode and ephemeral-root status.
+
 Available **before** exam lockdown:
 
 - network selection;
@@ -89,7 +93,9 @@ Browser command-line kiosk flags are convenience controls, not a complete lockdo
 
 ### 6. Wayland kiosk layer
 
-A minimal compositor such as Cage is a candidate because it is intentionally designed to run a single maximized application.
+The amd64 prototype now uses **Cage** and launches it through `safeexamos-kiosk.service` as the unprivileged `exam` user. This path is covered by an automated QEMU graphical smoke test.
+
+Cage is intentionally used to run a single maximized application.
 
 SafeExamOS must additionally remove or block:
 

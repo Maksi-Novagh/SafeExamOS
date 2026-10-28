@@ -11,9 +11,22 @@ SafeExamOS explores a complementary security model for digital examinations:
 
 ## Project status
 
-**Research / architecture / early prototyping. Not ready for real examinations.**
+**Research / architecture / functional boot prototype. Not ready for real examinations.**
 
-The repository is intentionally documentation-first while the compatibility and threat model are being validated against current upstream SEB behavior.
+**Roadmap progress: 21%** — `████░░░░░░░░░░░░░░░░`
+
+> Progress is the ratio of completed roadmap milestones, **not** a security/readiness score. SafeExamOS is not yet suitable for production examinations.
+
+Current verified milestones:
+
+- CI-built Debian 13 amd64 ISO;
+- automated QEMU userspace boot;
+- automated Cage + Chromium graphical launcher boot;
+- dedicated unprivileged `exam` kiosk service;
+- local hardware/network pre-flight inventory;
+- framebuffer evidence captured by CI.
+
+The repository remains documentation-first: implementation, tests and documentation are updated together.
 
 ## Target workflow
 
@@ -118,6 +131,9 @@ Key upstream observations:
 - [Threat model](docs/threat-model.md)
 - [SEB compatibility plan](docs/seb-compatibility.md)
 - [Hardware support strategy](docs/hardware-support.md)
+- [Pre-flight subsystem](docs/preflight.md)
+- [Graphical session](docs/graphical-session.md)
+- [CI verification](docs/ci.md)
 - [Proctoring and privacy](docs/proctoring-and-privacy.md)
 - [Research baseline](docs/research/2026-10-27-seb-baseline.md)
 - [Roadmap](ROADMAP.md)

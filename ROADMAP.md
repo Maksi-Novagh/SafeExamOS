@@ -22,9 +22,9 @@ This roadmap is deliberately evidence-driven. A checkbox only means the item is 
 - [ ] Reproducible amd64 image build
 - [ ] Read-only base system
 - [ ] Ephemeral writable state
-- [ ] Automatic graphical boot
-- [ ] Wayland kiosk session
-- [ ] Chromium kiosk
+- [x] Automatic graphical boot
+- [x] Wayland kiosk session
+- [x] Chromium kiosk
 - [ ] Ethernet setup
 - [ ] Wi-Fi setup
 - [ ] Keyboard layout selector
@@ -50,7 +50,7 @@ This roadmap is deliberately evidence-driven. A checkbox only means the item is 
 
 ## Phase 3 — Lockdown
 
-- [ ] Dedicated unprivileged exam user
+- [x] Dedicated unprivileged exam user
 - [ ] Privileged policy daemon with narrow IPC
 - [ ] Disable alternate TTY access
 - [ ] Disable shell access from the exam session
@@ -67,6 +67,7 @@ This roadmap is deliberately evidence-driven. A checkbox only means the item is 
 
 ## Phase 4 — Hardware
 
+- [x] Basic local pre-flight inventory collector
 - [ ] Compatibility scanner
 - [ ] PCI/USB hardware report format
 - [ ] Hardware support database
