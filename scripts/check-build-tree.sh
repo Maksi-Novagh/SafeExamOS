@@ -48,3 +48,14 @@ if grep -Eq 'chromium .*--no-sandbox' build/amd64/config/includes.chroot/usr/loc
 fi
 
 echo "Build tree check: PASS"
+
+
+if ! grep -q -- '--app="$LAUNCHER"' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
+  echo "error: Chromium must launch the exam surface in app mode" >&2
+  exit 1
+fi
+
+if grep -q -- '--kiosk' build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session; then
+  echo "error: legacy Chromium kiosk mode must not replace the single-surface app-mode launcher" >&2
+  exit 1
+fi

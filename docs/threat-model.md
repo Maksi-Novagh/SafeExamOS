@@ -138,7 +138,8 @@ Risks:
 - compositor exit exposing TTY;
 - alternate session launch;
 - desktop portal abuse;
-- debug shortcuts.
+- debug shortcuts;
+- browser-native shortcuts opening new tabs/windows or closing the exam surface (`Ctrl+T`, `Ctrl+N`, `Ctrl+W`, `Ctrl+O`, `F6`, `Alt+F4`, and equivalents).
 
 Mitigations planned:
 
@@ -146,7 +147,10 @@ Mitigations planned:
 - no general desktop;
 - TTY policy;
 - service restart/fail-closed behavior;
-- no debug escape paths in production images.
+- no debug escape paths in production images;
+- single-surface Chromium app mode as an interim reduction;
+- compositor/policy-level interception of forbidden shortcuts;
+- regression tests proving forbidden shortcuts cannot create, close, or escape the exam surface.
 
 ### Privileged daemon / IPC
 

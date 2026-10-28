@@ -76,6 +76,7 @@ This roadmap is deliberately evidence-driven. A checkbox only means the item is 
 - [ ] measured/verified boot design
 - [ ] watchdog and fail-closed recovery
 - [ ] security regression tests
+- [ ] Block browser/session escape shortcuts (Ctrl+W/T/N/O, F6, Alt+F4, etc.)
 
 ## Phase 4 — Hardware
 
