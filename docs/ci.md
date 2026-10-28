@@ -226,3 +226,18 @@ Run #11 still reached userspace but never produced the graphical runtime marker.
 The new flow runs `safeexamos-session` as the unprivileged `exam` user, owns `tty1`, uses PAM/logind, has a dedicated runtime directory, conflicts with the normal tty1 getty, and writes minimal lifecycle markers to the serial console.
 
 This makes the graphical session lifecycle observable and removes shell-profile startup as a dependency.
+
+
+### 2026-10-28 — stale hook reference after session-bootstrap refactor
+
+Run #12 failed during image construction before QEMU was reached.
+
+The old shell-profile bootstrap file had correctly been removed, but `0100-safeexamos-permissions.hook.chroot` still attempted to chmod:
+
+```text
+/etc/profile.d/90-safeexamos-session.sh
+```
+
+Because the hook runs with `set -e`, the missing file aborted `live-build`.
+
+The stale chmod was removed. This was a refactor cleanup bug, not a runtime failure of the new systemd kiosk service.
