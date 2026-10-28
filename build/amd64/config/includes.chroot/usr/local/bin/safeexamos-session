@@ -5,16 +5,16 @@ export XDG_SESSION_TYPE=wayland
 export XDG_CURRENT_DESKTOP=SafeExamOS
 export XDG_SESSION_DESKTOP=SafeExamOS
 export XKB_DEFAULT_LAYOUT="${SAFEEXAMOS_XKB_LAYOUT:-us}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
 LAUNCHER="file:///usr/share/safeexamos/launcher/index.html"
 
-exec cage -d -- chromium \
-  --kiosk \
-  --no-first-run \
-  --no-default-browser-check \
-  --disable-session-crashed-bubble \
-  --disable-infobars \
-  --disable-translate \
-  --disable-features=Translate \
-  --user-data-dir="/run/user/$(id -u)/safeexamos-chromium" \
-  "$LAUNCHER"
+printf '%s\n' 'SAFEEXAMOS_SESSION_START' > /dev/ttyS0 2>/dev/null || true
+printf 'SAFEEXAMOS_SESSION_USER=%s UID=%s RUNTIME=%s\n' "$(id -un)" "$(id -u)" "$XDG_RUNTIME_DIR" > /dev/ttyS0 2>/dev/null || true
+
+if [ ! -d "$XDG_RUNTIME_DIR" ]; then
+  printf '%s\n' 'SAFEEXAMOS_SESSION_ERROR runtime-dir-missing' > /dev/ttyS0 2>/dev/null || true
+  exit 1
+fi
+
+exec cage -d -- chromium   --kiosk   --no-first-run   --no-default-browser-check   --disable-session-crashed-bubble   --disable-infobars   --disable-translate   --disable-features=Translate   --user-data-dir="$XDG_RUNTIME_DIR/chromium"   "$LAUNCHER"

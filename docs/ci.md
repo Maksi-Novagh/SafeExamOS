@@ -217,3 +217,12 @@ The live system was healthy, but the kiosk session never started because the pro
 The image now installs a systemd getty override for `tty1` using `agetty --autologin exam`. This allows the prototype's login/PAM session to start and immediately hand off to Cage and Chromium.
 
 This is a prototype bootstrap mechanism. The production design should replace profile-based autostart with a dedicated kiosk session unit that cannot fall back to an interactive shell.
+
+
+### 2026-10-28 — replaced getty/profile bootstrap with dedicated kiosk service
+
+Run #11 still reached userspace but never produced the graphical runtime marker. The autologin/profile-based startup path was therefore replaced by an explicit systemd kiosk service.
+
+The new flow runs `safeexamos-session` as the unprivileged `exam` user, owns `tty1`, uses PAM/logind, has a dedicated runtime directory, conflicts with the normal tty1 getty, and writes minimal lifecycle markers to the serial console.
+
+This makes the graphical session lifecycle observable and removes shell-profile startup as a dependency.

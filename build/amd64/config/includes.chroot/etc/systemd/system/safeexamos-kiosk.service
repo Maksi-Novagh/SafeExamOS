@@ -1,0 +1,29 @@
+[Unit]
+Description=SafeExamOS kiosk session
+After=systemd-user-sessions.service systemd-logind.service NetworkManager.service
+Wants=systemd-logind.service
+Conflicts=getty@tty1.service
+ConditionPathExists=/dev/tty1
+
+[Service]
+Type=simple
+User=exam
+PAMName=login
+TTYPath=/dev/tty1
+StandardInput=tty-force
+StandardOutput=journal
+StandardError=journal
+RuntimeDirectory=safeexamos-exam
+RuntimeDirectoryMode=0700
+Environment=XDG_RUNTIME_DIR=/run/safeexamos-exam
+Environment=XDG_SESSION_TYPE=wayland
+Environment=XDG_CURRENT_DESKTOP=SafeExamOS
+Environment=XDG_SESSION_DESKTOP=SafeExamOS
+Environment=SAFEEXAMOS_XKB_LAYOUT=us
+ExecStart=/usr/local/bin/safeexamos-session
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=5
+
+[Install]
+WantedBy=multi-user.target

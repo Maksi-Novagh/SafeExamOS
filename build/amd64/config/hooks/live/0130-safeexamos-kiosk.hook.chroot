@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+
+chmod 0755 /usr/local/bin/safeexamos-session
+systemctl disable getty@tty1.service 2>/dev/null || true
+systemctl enable safeexamos-kiosk.service
