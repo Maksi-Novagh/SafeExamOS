@@ -29,12 +29,12 @@ if [ ! -s "$RUNTIME_LAUNCHER/preflight.js" ]; then
 fi
 
 exec cage -d -- chromium \
-  --kiosk \
+  --app="$LAUNCHER" \
+  --start-fullscreen \
   --no-first-run \
   --no-default-browser-check \
   --disable-session-crashed-bubble \
   --disable-infobars \
   --disable-translate \
   --disable-features=Translate \
-  --user-data-dir="$XDG_RUNTIME_DIR/chromium" \
-  "$LAUNCHER"
+  --user-data-dir="$XDG_RUNTIME_DIR/chromium"
