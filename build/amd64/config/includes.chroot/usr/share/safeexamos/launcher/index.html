@@ -23,6 +23,15 @@
 <div class="row"><label for="code">Exam code</label><div class="actions"><input id="code" placeholder="Enter exam code" autocomplete="off"><button class="primary" id="continue" type="button">Continue</button></div></div>
 </section>
 <section class="panel">
+<h2>Keyboard</h2>
+<div class="row"><label for="typing-test">Typing test</label><input id="typing-test" placeholder="Type here to verify your keyboard"></div>
+</section>
+<section class="panel">
+<h2>Compatibility verdict</h2>
+<div class="status" id="compat-status">Evaluating…</div>
+<div class="muted" id="compat-detail" style="margin-top:8px">—</div>
+</section>
+<section class="panel">
 <h2>System check</h2>
 <ul class="checks">
 <li><span class="indicator" id="network-indicator">•</span><strong>Network</strong><span class="detail muted" id="network-detail">Checking…</span></li>
@@ -67,9 +76,22 @@
   document.getElementById('interfaces').textContent=p.network.interfaces+' · Wi-Fi: '+p.network.wifiInterfaces;
   document.getElementById('generated').textContent='Pre-flight generated '+p.generatedAt;
   const warnings=[!online,!(p.displays&&p.displays.count>0),p.inputDevices<1,p.ephemeral!=='yes'].filter(Boolean).length;
+  const blocking=[];
+  const verdictWarnings=[];
+  if(p.memoryMiB<1024) blocking.push('less than 1 GiB RAM');
+  if(p.inputDevices<1) blocking.push('no input devices detected');
+  if(!online) verdictWarnings.push('no default network route');
+  if(p.ephemeral!=='yes') verdictWarnings.push('ephemeral root not proven');
+  if(!(p.displays&&p.displays.count>0)) verdictWarnings.push('display output not reported');
+  if(!p.gpu||p.gpu==='Not detected') verdictWarnings.push('GPU not identified');
+  const compat=document.getElementById('compat-status');
+  const detail=document.getElementById('compat-detail');
+  if(blocking.length){compat.textContent='Blocking';compat.className='status bad';detail.textContent=blocking.join(' · ');}
+  else if(verdictWarnings.length){compat.textContent='Warning';compat.className='status warn';detail.textContent=verdictWarnings.join(' · ');}
+  else{compat.textContent='Supported';compat.className='status';detail.textContent='No blocking condition detected by current prototype rules.';}
   const status=document.getElementById('overall-status');
-  status.textContent=warnings?'Ready with '+warnings+' warning'+(warnings===1?'':'s'):'System ready';
-  status.className='status'+(warnings?' warn':'');
+  status.textContent=blocking.length?'Not ready':verdictWarnings.length?'Ready with '+verdictWarnings.length+' warning'+(verdictWarnings.length===1?'':'s'):'System ready';
+  status.className='status'+(blocking.length?' bad':verdictWarnings.length?' warn':'');
 })();
 document.getElementById('continue').addEventListener('click',function(){var f=document.getElementById('code');if(!f.value.trim()){f.focus();return;}alert('Prototype only: exam retrieval is not implemented yet.');});
 </script>
