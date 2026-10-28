@@ -1,0 +1,10 @@
+{
+  "BrowserGuestModeEnabled": false,
+  "BrowserAddPersonEnabled": false,
+  "PasswordManagerEnabled": false,
+  "BackgroundModeEnabled": false,
+  "EditBookmarksEnabled": false,
+  "AllowFileSelectionDialogs": false,
+  "ExternalProtocolDialogShowAlwaysOpenCheckbox": false,
+  "ProfilePickerOnStartupAvailability": 1
+}

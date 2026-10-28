@@ -133,6 +133,7 @@ Key upstream observations:
 
 - [Architecture](docs/architecture.md)
 - [Threat model](docs/threat-model.md)
+- [Lockdown baseline](docs/lockdown-baseline.md)
 - [Escape and cheating threat catalog](docs/escape-and-cheating-catalog.md)
 - [SEB compatibility plan](docs/seb-compatibility.md)
 - [Hardware support strategy](docs/hardware-support.md)

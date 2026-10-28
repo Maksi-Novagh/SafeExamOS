@@ -64,13 +64,13 @@ This roadmap is deliberately evidence-driven. A checkbox only means the item is 
 
 - [x] Dedicated unprivileged exam user
 - [ ] Privileged policy daemon with narrow IPC
-- [ ] Disable alternate TTY access
+- [x] Disable alternate TTY access (baseline: auto VTs/gettys/debug shell masked; physical validation pending)
 - [ ] Disable shell access from the exam session
 - [ ] Device hotplug policy
 - [ ] USB class policy
 - [ ] Bluetooth profile policy
 - [ ] display/output policy
-- [ ] browser process containment
+- [ ] browser process containment (managed browser-policy baseline added)
 - [ ] system service minimization
 - [ ] signed update strategy
 - [ ] measured/verified boot design

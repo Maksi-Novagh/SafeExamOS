@@ -15,6 +15,9 @@ build/amd64/config/hooks/live/0200-safeexamos-cleanup.hook.chroot
 build/amd64/config/includes.chroot/etc/dpkg/dpkg.cfg.d/01-safeexamos-minimal
 build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-ci-boot-marker.service
 build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-kiosk.service
+build/amd64/config/includes.chroot/etc/chromium/policies/managed/safeexamos.json
+build/amd64/config/includes.chroot/etc/systemd/logind.conf.d/50-safeexamos.conf
+build/amd64/config/hooks/live/0140-safeexamos-lockdown.hook.chroot
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-boot-marker
 build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-ci-ui-marker.service
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-ui-marker
@@ -106,3 +109,5 @@ if grep -q -- '--kiosk' build/amd64/config/includes.chroot/usr/local/bin/safeexa
   echo "error: legacy Chromium kiosk mode must not replace the single-surface app-mode launcher" >&2
   exit 1
 fi
+
+echo "Build tree check: PASS"

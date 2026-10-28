@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+for unit in   getty@tty2.service   getty@tty3.service   getty@tty4.service   getty@tty5.service   getty@tty6.service   serial-getty@ttyS0.service   debug-shell.service   ctrl-alt-del.target
+do
+  systemctl mask "$unit" >/dev/null 2>&1 || true
+done
+
+chmod 0755 /usr/local/bin/safeexamos-session
+chmod 0644 /etc/chromium/policies/managed/safeexamos.json
+chmod 0644 /etc/systemd/logind.conf.d/50-safeexamos.conf
