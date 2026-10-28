@@ -1,0 +1,6 @@
+# SafeExamOS image-size policy.
+# Keep copyright/license notices, omit runtime-unneeded documentation payloads.
+path-exclude=/usr/share/doc/*
+path-include=/usr/share/doc/*/copyright
+path-exclude=/usr/share/man/*
+path-exclude=/usr/share/info/*

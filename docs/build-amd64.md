@@ -18,13 +18,14 @@ Boot directly into a SafeExamOS-styled launcher without installing or depending 
 ```text
 UEFI/BIOS
   -> Debian live boot
-  -> live-config exam user
-  -> tty1 session
-  -> profile.d SafeExamOS autostart
+  -> systemd
+  -> safeexamos-kiosk.service
+  -> unprivileged exam user
   -> safeexamos-session
+  -> pre-flight collector
   -> Cage
   -> Chromium kiosk
-  -> local launcher
+  -> runtime launcher
 ```
 
 ## Persistence model
@@ -47,18 +48,31 @@ This is **not** a complete lockdown.
 
 The launcher follows `docs/design-system.md`: #F0F0F0 utility background, white panels, DodgerBlue accent/focus, LightBlue hover, black primary text, DimGray secondary text and a Segoe UI-compatible font stack. No SEB logo asset is embedded.
 
+## Current image-size optimization
+
+The build currently:
+
+- disables APT recommended packages by default;
+- disables source-archive inclusion;
+- excludes man/info pages and most installed package documentation while preserving copyright files;
+- clears APT lists, downloaded package archives and temporary files from the final live filesystem.
+
+Firmware, CA certificates, Chromium resources, locales and shared libraries are deliberately not aggressively pruned yet.
+
+See `docs/image-optimization.md` for the staged optimization policy.
+
 ## Reproducibility caveat
 
 The source configuration is reproducible, but package repositories are not yet snapshot-pinned, so builds at different dates are not expected to be bit-for-bit identical.
 
 ## First smoke-test checklist
 
-- [ ] build succeeds on Debian 13 amd64
+- [x] build succeeds on Debian 13 amd64
 - [ ] ISO boots under UEFI QEMU
-- [ ] tty1 reaches SafeExamOS session
-- [ ] Cage starts
-- [ ] Chromium starts
-- [ ] launcher renders
+- [x] userspace reaches SafeExamOS kiosk service in direct-kernel QEMU smoke
+- [x] Cage starts
+- [x] Chromium starts
+- [x] launcher renders
 - [ ] keyboard and pointer work
 - [ ] NetworkManager sees virtual Ethernet
 - [ ] browser crash does not expose a general desktop

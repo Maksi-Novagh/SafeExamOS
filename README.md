@@ -136,6 +136,7 @@ Key upstream observations:
 - [Pre-flight subsystem](docs/preflight.md)
 - [Graphical session](docs/graphical-session.md)
 - [CI verification](docs/ci.md)
+- [Image optimization](docs/image-optimization.md)
 - [Proctoring and privacy](docs/proctoring-and-privacy.md)
 - [Research baseline](docs/research/2026-10-27-seb-baseline.md)
 - [Roadmap](ROADMAP.md)

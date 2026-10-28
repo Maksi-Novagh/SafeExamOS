@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+rm -rf /var/lib/apt/lists/*
+rm -f /var/cache/apt/archives/*.deb
+rm -f /var/cache/apt/archives/partial/*.deb 2>/dev/null || true
+rm -f /var/cache/debconf/*-old 2>/dev/null || true
+rm -rf /tmp/* /var/tmp/*
+
+# Keep package metadata required by dpkg itself. Do not delete firmware,
+# locale definitions, certificates, Chromium resources, or shared libraries.

@@ -11,6 +11,8 @@ build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-preflight
 build/amd64/config/hooks/live/0130-safeexamos-kiosk.hook.chroot
 build/amd64/config/includes.chroot/usr/share/safeexamos/launcher/index.html
 build/amd64/config/hooks/live/0100-safeexamos-permissions.hook.chroot
+build/amd64/config/hooks/live/0200-safeexamos-cleanup.hook.chroot
+build/amd64/config/includes.chroot/etc/dpkg/dpkg.cfg.d/01-safeexamos-minimal
 build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-ci-boot-marker.service
 build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-kiosk.service
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-boot-marker
