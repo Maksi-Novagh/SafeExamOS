@@ -28,6 +28,8 @@ Current verified milestones:
 
 The repository remains documentation-first: implementation, tests and documentation are updated together.
 
+Latest pre-flight work (validation pending): keyboard typing test and a local `Supported / Warning / Blocking` compatibility verdict. Interactive Wi-Fi joining and system-level keyboard-layout switching are still pending.
+
 ## Target workflow
 
 ```text
