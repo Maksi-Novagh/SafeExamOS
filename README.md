@@ -23,7 +23,7 @@ Current verified milestones:
 - automated QEMU userspace boot;
 - automated Cage + Chromium graphical launcher boot;
 - dedicated unprivileged `exam` kiosk service;
-- local hardware/network pre-flight inventory;
+- local hardware/network pre-flight inventory integrated into the verified graphical boot path;
 - framebuffer evidence captured by CI.
 
 The repository remains documentation-first: implementation, tests and documentation are updated together.

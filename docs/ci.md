@@ -286,3 +286,23 @@ The graphical smoke harness previously discarded QEMU stderr. It now:
 - uploads the stderr log with the graphical evidence artifact.
 
 This change is diagnostic only; it does not alter SafeExamOS runtime behavior.
+
+
+### 2026-10-28 — first successful pre-flight + graphical integration run
+
+Run #18 (`6920e7a9`) completed successfully end-to-end.
+
+Validated in the same generated amd64 ISO:
+
+- static checks;
+- ISO build and structure validation;
+- userspace boot smoke test;
+- runtime pre-flight generation before Chromium startup;
+- Cage + Chromium graphical launcher;
+- graphical runtime marker;
+- framebuffer capture;
+- graphical evidence artifact upload.
+
+The guest serial log contained `SAFEEXAMOS_CI_BOOT_OK` and `SAFEEXAMOS_CI_UI_OK`. QEMU stderr only contained the expected termination message from the CI harness after the successful capture.
+
+This is the first successful CI run after integrating the live pre-flight data path into the launcher.

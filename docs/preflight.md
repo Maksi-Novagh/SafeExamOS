@@ -72,3 +72,12 @@ Future server reporting must define a data-minimized schema before any hardware 
 - PCI/USB identifiers for compatibility matching;
 - policy result: supported / warning / blocking;
 - automated fixture tests for the collector.
+
+
+## CI validation
+
+The pre-flight integration is now covered by the graphical QEMU smoke path.
+
+Run #18 on 2026-10-28 successfully booted the generated amd64 image, generated the runtime launcher data, started Cage and Chromium, reached the launcher and captured the framebuffer.
+
+The kiosk session refuses to continue if `preflight.js` is missing, so a green graphical smoke run proves that the collector completed far enough to produce the runtime data file consumed by the launcher.
