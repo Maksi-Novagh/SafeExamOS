@@ -141,6 +141,7 @@ jobs:
           name: qemu-graphical-${{ github.sha }}
           path: |
             .ci/qemu-ui/serial.log
+            .ci/qemu-ui/qemu-stderr.log
             .ci/qemu-ui/safeexamos-ui.ppm
           if-no-files-found: warn
           retention-days: 14

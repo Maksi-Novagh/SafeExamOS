@@ -272,3 +272,17 @@ The reason was a CI observer mismatch: Chromium now loads the launcher from the 
 The observer now accepts the runtime launcher path suffix `/launcher/index.html`.
 
 The session also emits `SAFEEXAMOS_PREFLIGHT_OK` or `SAFEEXAMOS_PREFLIGHT_ERROR` before Cage starts, making future collector failures directly visible in the serial log.
+
+
+### 2026-10-28 — graphical QEMU exited before guest serial initialization
+
+Run #17 built the ISO and passed the userspace smoke test, but the graphical QEMU process exited after roughly 12 seconds. The uploaded `serial.log` was zero bytes, proving that this failure occurred before the guest produced any serial diagnostics.
+
+The graphical smoke harness previously discarded QEMU stderr. It now:
+
+- captures QEMU stderr to `.ci/qemu-ui/qemu-stderr.log`;
+- records the QEMU exit code;
+- prints both host-side QEMU stderr and guest serial output on early exit;
+- uploads the stderr log with the graphical evidence artifact.
+
+This change is diagnostic only; it does not alter SafeExamOS runtime behavior.

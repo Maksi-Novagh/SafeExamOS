@@ -18,17 +18,18 @@ mkdir -p .ci/qemu-ui
 LOG=.ci/qemu-ui/serial.log
 MON=.ci/qemu-ui/monitor.sock
 PPM=.ci/qemu-ui/safeexamos-ui.ppm
+QEMU_ERR=.ci/qemu-ui/qemu-stderr.log
 KERNEL=.ci/qemu-ui/vmlinuz
 INITRD=.ci/qemu-ui/initrd.img
 
-rm -f "$LOG" "$MON" "$PPM" "$KERNEL" "$INITRD"
+rm -f "$LOG" "$MON" "$PPM" "$QEMU_ERR" "$KERNEL" "$INITRD"
 
 xorriso -osirrox on -indev "$ISO"   -extract /live/vmlinuz "$KERNEL"   -extract /live/initrd.img "$INITRD" >/dev/null 2>&1
 
 test -s "$KERNEL"
 test -s "$INITRD"
 
-qemu-system-x86_64   -machine q35,accel=tcg   -cpu max   -m 2048   -smp 2   -kernel "$KERNEL"   -initrd "$INITRD"   -append "boot=live components quiet console=ttyS0,115200n8 username=exam hostname=safeexamos locales=en_US.UTF-8 keyboard-layouts=us"   -drive "file=$ISO,media=cdrom,readonly=on,format=raw"   -device virtio-vga   -device virtio-net-pci,netdev=n0   -netdev user,id=n0   -display none   -serial "file:$LOG"   -monitor "unix:$MON,server,nowait"   -no-reboot   >/dev/null 2>&1 &
+qemu-system-x86_64   -machine q35,accel=tcg   -cpu max   -m 2048   -smp 2   -kernel "$KERNEL"   -initrd "$INITRD"   -append "boot=live components quiet console=ttyS0,115200n8 username=exam hostname=safeexamos locales=en_US.UTF-8 keyboard-layouts=us"   -drive "file=$ISO,media=cdrom,readonly=on,format=raw"   -device virtio-vga   -device virtio-net-pci,netdev=n0   -netdev user,id=n0   -display none   -serial "file:$LOG"   -monitor "unix:$MON,server,nowait"   -no-reboot   >/dev/null 2>"$QEMU_ERR" &
 
 QEMU_PID=$!
 cleanup() {
@@ -49,7 +50,14 @@ while [ "$(date +%s)" -lt "$deadline" ]; do
   fi
 
   if ! kill -0 "$QEMU_PID" 2>/dev/null; then
-    echo "error: QEMU exited before graphical runtime became ready" >&2
+    set +e
+    wait "$QEMU_PID"
+    qemu_rc=$?
+    set -e
+    echo "error: QEMU exited before graphical runtime became ready (exit=$qemu_rc)" >&2
+    echo "--- QEMU stderr ---" >&2
+    tail -n 200 "$QEMU_ERR" >&2 || true
+    echo "--- guest serial ---" >&2
     tail -n 200 "$LOG" >&2 || true
     exit 1
   fi
