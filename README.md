@@ -13,7 +13,7 @@ SafeExamOS explores a complementary security model for digital examinations:
 
 **Research / architecture / functional boot prototype. Not ready for real examinations.**
 
-**Roadmap progress: 21%** — `████░░░░░░░░░░░░░░░░`
+**Roadmap progress: 23%** — `█████░░░░░░░░░░░░░░░`
 
 > Progress is the ratio of completed roadmap milestones, **not** a security/readiness score. SafeExamOS is not yet suitable for production examinations.
 

@@ -315,3 +315,32 @@ After `--apt-recommends false` was enabled, graphical runs intermittently reache
 SafeExamOS now lists `user-setup` explicitly in the amd64 package list and the static build-tree check requires it.
 
 This is an optimization regression: the runtime feature was valid before dependency pruning, but an implicit package dependency was removed by the image-size pass.
+
+
+### 2026-10-28 — optimization regression removed live user creation
+
+After the image-size pass switched live-build to `--apt-recommends false`, graphical runs reached the Debian login prompt instead of SafeExamOS. Build and userspace boot still passed, which made the failure look like a kiosk regression.
+
+Root cause: `user-setup` had previously arrived indirectly. With recommended packages disabled, it disappeared, and the configured Debian Live user `exam` was no longer created by the expected live-config path.
+
+Fix:
+
+- add `user-setup` explicitly to the SafeExamOS package list;
+- require it in `scripts/check-build-tree.sh`;
+- treat implicit dependencies removed by optimization as release-blocking regressions.
+
+Runs #25 and #27 are therefore not evidence that Cage or Chromium app mode failed; they never reached the intended live-user kiosk session.
+
+### 2026-10-28 — build-tree validator corruption
+
+A sequence of incremental text patches corrupted `scripts/check-build-tree.sh`, duplicating fragments and producing invalid POSIX shell syntax. Runs #30 and #31 failed in static checks before any ISO build/runtime validation.
+
+The validator was rebuilt from scratch with a single canonical structure and now checks:
+
+- required files;
+- core runtime packages, including `user-setup`;
+- Chromium sandbox remains enabled;
+- app-mode launcher is present;
+- legacy kiosk flag is absent;
+- managed browser policy exists;
+- logind automatic VTs are disabled.
