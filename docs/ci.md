@@ -381,3 +381,21 @@ pam_unix(login:session): session opened for user exam
 This shows the unit was blocked in the `PAMName=login` session setup before reaching `ExecStart`.
 
 The kiosk is a dedicated system service already configured with `User=exam`; it does not need to emulate an interactive login session. `PAMName=login` was therefore removed. tty ownership and the unprivileged user boundary remain enforced by systemd.
+
+
+### 2026-10-29 — run #39: PAM resolved, pre-flight not completed
+
+Run #39 built the ISO and booted userspace successfully. Its kiosk unit was enabled and active, with `safeexamos-session` and `safeexamos-preflight` running. Removing `PAMName=login` therefore resolved the earlier pre-`ExecStart` stall.
+
+The graphical marker still timed out. The service journal showed permission errors when the unprivileged `exam` process wrote directly to `/dev/ttyS0`; the collector was still running at the diagnostic snapshot. This did **not** establish that Cage or Chromium had failed.
+
+Changes for the next run:
+
+- session lifecycle markers now use systemd's journal, not direct privileged serial writes;
+- hardware and NetworkManager probes have bounded timeouts;
+- the collector creates an explicit blocking fallback before attempting optional probes, then atomically publishes successful results;
+- the session has an overall collector timeout and continues to the launcher only with an available pre-flight file;
+- the root-owned UI observer prints kiosk journal diagnostics at timeout;
+- a manually runnable regression test simulates a hung `nmcli`.
+
+No GitHub Actions workflow definition was changed.

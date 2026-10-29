@@ -4,9 +4,36 @@ set -eu
 OUT_DIR="${1:-/run/safeexamos-preflight}"
 mkdir -p "$OUT_DIR"
 
+# Keep a safe, blocking snapshot if an optional hardware probe stalls.
+# The UI must not claim readiness without a complete inventory.
+cat > "$OUT_DIR/preflight.js" <<'JS'
+window.SAFEEXAMOS_PREFLIGHT = {
+  collectorStatus: "degraded",
+  generatedAt: "unavailable",
+  cpu: "unknown", memoryMiB: 0, architecture: "unknown",
+  kernel: "unknown", gpu: "Not detected",
+  network: {state: "offline", managerState: "unknown", detail: "Pre-flight incomplete", interfaces: "none", wifiInterfaces: "none"},
+  keyboard: {layout: "unknown"}, inputDevices: 0,
+  displays: {count: 0, outputs: "unknown"},
+  bootMode: "unknown", ephemeral: "unknown"
+};
+JS
+chmod 0644 "$OUT_DIR/preflight.js"
+
 json_escape() {
-  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g; s//\\r/g; s/
-/\\n/g'
+  printf '%s' "$1" | awk '
+    BEGIN { ORS=""; first=1; for (i=0;i<32;i++) ctrl[sprintf("%c",i)]=i }
+    {
+      if (!first) printf "\\n"
+      first=0
+      for (i=1;i<=length($0);i++) {
+        c=substr($0,i,1)
+        if (c=="\\") printf "\\\\"
+        else if (c=="\"") printf "\\\""
+        else if (c in ctrl) printf "\\u%04x",ctrl[c]
+        else printf "%s",c
+      }
+    }'
 }
 
 first_line() {
@@ -19,10 +46,10 @@ cpu_model=$(awk -F: '/model name|Hardware|Processor/ {gsub(/^[ 	]+/,"",$2); prin
 mem_kib=$(awk '/MemTotal:/ {print $2; exit}' /proc/meminfo 2>/dev/null || echo 0)
 mem_mib=$((mem_kib / 1024))
 
-gpu=$(lspci 2>/dev/null | grep -Ei 'vga compatible controller|3d controller|display controller' | head -n 1 | sed 's/^[^ ]* //' || true)
+gpu=$(timeout -k 1s 2s lspci 2>/dev/null | grep -Ei 'vga compatible controller|3d controller|display controller' | head -n 1 | sed 's/^[^ ]* //' || true)
 [ -n "$gpu" ] || gpu="Not detected"
 
-default_route=$(ip route show default 2>/dev/null | first_line || true)
+default_route=$(timeout -k 1s 2s ip route show default 2>/dev/null | first_line || true)
 network_state="offline"
 network_detail="No default route"
 if [ -n "$default_route" ]; then
@@ -30,13 +57,13 @@ if [ -n "$default_route" ]; then
   network_detail="$default_route"
 fi
 
-nm_state=$(nmcli -t -f STATE general 2>/dev/null | first_line || true)
+nm_state=$(timeout -k 1s 3s nmcli -t -f STATE general 2>/dev/null | first_line || true)
 [ -n "$nm_state" ] || nm_state="unknown"
 
-interfaces=$(ip -o link show 2>/dev/null | awk -F': ' '{print $2}' | paste -sd ',' - || true)
+interfaces=$(timeout -k 1s 2s ip -o link show 2>/dev/null | awk -F': ' '{print $2}' | paste -sd ',' - || true)
 [ -n "$interfaces" ] || interfaces="none"
 
-wifi_interfaces=$(nmcli -t -f DEVICE,TYPE device status 2>/dev/null | awk -F: '$2=="wifi" {print $1}' | paste -sd ',' - || true)
+wifi_interfaces=$(timeout -k 1s 3s nmcli -t -f DEVICE,TYPE device status 2>/dev/null | awk -F: '$2=="wifi" {print $1}' | paste -sd ',' - || true)
 [ -n "$wifi_interfaces" ] || wifi_interfaces="none"
 
 keyboard_layout="${SAFEEXAMOS_XKB_LAYOUT:-us}"
@@ -66,8 +93,11 @@ boot_mode="BIOS"
 session_ephemeral="yes"
 findmnt -n -o FSTYPE / 2>/dev/null | grep -Eq 'overlay|squashfs' || session_ephemeral="unknown"
 
-cat > "$OUT_DIR/preflight.js" <<EOF
+TMP=$(mktemp "$OUT_DIR/.preflight.XXXXXX")
+trap 'rm -f "$TMP"' EXIT HUP INT TERM
+cat > "$TMP" <<EOF
 window.SAFEEXAMOS_PREFLIGHT = {
+  collectorStatus: "ok",
   generatedAt: "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   cpu: "$(json_escape "$cpu_model")",
   memoryMiB: $mem_mib,
@@ -94,4 +124,5 @@ window.SAFEEXAMOS_PREFLIGHT = {
 };
 EOF
 
-chmod 0644 "$OUT_DIR/preflight.js"
+chmod 0644 "$TMP"
+mv -f "$TMP" "$OUT_DIR/preflight.js"

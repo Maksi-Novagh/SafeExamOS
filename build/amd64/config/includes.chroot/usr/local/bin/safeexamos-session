@@ -7,27 +7,30 @@ export XDG_SESSION_DESKTOP=SafeExamOS
 export XKB_DEFAULT_LAYOUT="${SAFEEXAMOS_XKB_LAYOUT:-us}"
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 
-printf '%s\n' 'SAFEEXAMOS_SESSION_START' > /dev/ttyS0 2>/dev/null || true
-printf 'SAFEEXAMOS_SESSION_USER=%s UID=%s RUNTIME=%s\n' "$(id -un)" "$(id -u)" "$XDG_RUNTIME_DIR" > /dev/ttyS0 2>/dev/null || true
+echo "SAFEEXAMOS_SESSION_START"
+printf "SAFEEXAMOS_SESSION_USER=%s UID=%s RUNTIME=%s\n" "$(id -un)" "$(id -u)" "$XDG_RUNTIME_DIR"
 
 RUNTIME_LAUNCHER="$XDG_RUNTIME_DIR/launcher"
 mkdir -p "$RUNTIME_LAUNCHER"
 cp /usr/share/safeexamos/launcher/index.html "$RUNTIME_LAUNCHER/index.html"
 
-if /usr/local/sbin/safeexamos-preflight "$RUNTIME_LAUNCHER"; then
-  printf '%s\n' 'SAFEEXAMOS_PREFLIGHT_OK' > /dev/ttyS0 2>/dev/null || true
+if timeout -k 2s 14s /usr/local/sbin/safeexamos-preflight "$RUNTIME_LAUNCHER"; then
+  echo "SAFEEXAMOS_PREFLIGHT_OK"
 else
-  printf '%s\n' 'SAFEEXAMOS_PREFLIGHT_ERROR' > /dev/ttyS0 2>/dev/null || true
-  exit 1
+  echo "SAFEEXAMOS_PREFLIGHT_WARNING collector failed or timed out; using blocking fallback" >&2
 fi
 
 LAUNCHER="file://$RUNTIME_LAUNCHER/index.html"
 
 if [ ! -s "$RUNTIME_LAUNCHER/preflight.js" ]; then
-  printf '%s\n' 'SAFEEXAMOS_SESSION_ERROR preflight-missing' > /dev/ttyS0 2>/dev/null || true
+  echo "SAFEEXAMOS_SESSION_ERROR preflight-missing" >&2
   exit 1
 fi
 
+if grep -Fq 'collectorStatus: "degraded"' "$RUNTIME_LAUNCHER/preflight.js"; then
+  echo "SAFEEXAMOS_PREFLIGHT_DEGRADED"
+fi
+echo "SAFEEXAMOS_CAGE_START"
 exec cage -d -- chromium \
   --app="$LAUNCHER" \
   --start-fullscreen \

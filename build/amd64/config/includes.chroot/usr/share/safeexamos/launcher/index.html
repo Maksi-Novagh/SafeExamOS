@@ -77,6 +77,7 @@
   document.getElementById('generated').textContent='Pre-flight generated '+p.generatedAt;
   const warnings=[!online,!(p.displays&&p.displays.count>0),p.inputDevices<1,p.ephemeral!=='yes'].filter(Boolean).length;
   const blocking=[];
+  if(p.collectorStatus!=='ok') blocking.push('pre-flight inventory incomplete');
   const verdictWarnings=[];
   if(p.memoryMiB<1024) blocking.push('less than 1 GiB RAM');
   if(p.inputDevices<1) blocking.push('no input devices detected');

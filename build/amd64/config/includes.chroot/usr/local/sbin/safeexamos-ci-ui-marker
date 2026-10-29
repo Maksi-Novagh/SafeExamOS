@@ -22,5 +22,10 @@ while [ "$(date +%s)" -lt "$deadline" ]; do
   sleep 1
 done
 
-printf '%s\n' 'SAFEEXAMOS_CI_UI_TIMEOUT' > /dev/ttyS0 2>/dev/null || true
+{
+  echo 'SAFEEXAMOS_CI_UI_TIMEOUT'
+  echo 'SAFEEXAMOS_CI_KIOSK_JOURNAL_BEGIN'
+  journalctl -u safeexamos-kiosk.service -b --no-pager -n 90 2>&1 || true
+  echo 'SAFEEXAMOS_CI_KIOSK_JOURNAL_END'
+} > /dev/ttyS0 2>/dev/null || true
 exit 1

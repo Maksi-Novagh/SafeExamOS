@@ -81,3 +81,12 @@ The pre-flight integration is now covered by the graphical QEMU smoke path.
 Run #18 on 2026-10-28 successfully booted the generated amd64 image, generated the runtime launcher data, started Cage and Chromium, reached the launcher and captured the framebuffer.
 
 The kiosk session refuses to continue if `preflight.js` is missing, so a green graphical smoke run proves that the collector completed far enough to produce the runtime data file consumed by the launcher.
+
+
+## Startup resilience (2026-10-29)
+
+The collector now writes a **degraded, blocking** snapshot before probing hardware, then atomically replaces it if collection completes. Individual potentially blocking commands have time limits; the kiosk wrapper enforces a maximum time for the full collection. A slow or unavailable NetworkManager must not leave the launcher on a blank screen. A degraded snapshot cannot be considered ready to start a real examination.
+
+Diagnostics are sent to the systemd journal; the unprivileged kiosk does not write directly to `/dev/ttyS0`.
+
+Run the standalone smoke test manually with `sh tests/preflight-smoke.sh`. This is not yet part of the Actions workflow.
