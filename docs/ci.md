@@ -358,3 +358,26 @@ Two changes were made:
 - the CI boot marker now prints the `exam` user state, kiosk enabled/active/failed state, full kiosk status, kiosk journal, and tty1 getty status to the serial log.
 
 This turns the next graphical failure into a directly diagnosable systemd failure instead of a 150-second timeout.
+
+
+### 2026-10-28 — kiosk blocked inside PAM session setup
+
+Run #38 produced the first complete kiosk diagnostic.
+
+Confirmed:
+
+- user `exam` exists with expected video/input/render groups;
+- `safeexamos-kiosk.service` is enabled;
+- the service is active;
+- `getty@tty1.service` is masked;
+- `safeexamos-session` still never emits `SAFEEXAMOS_SESSION_START`.
+
+The service main process remained as `(-session)`, and the journal ended after:
+
+```text
+pam_unix(login:session): session opened for user exam
+```
+
+This shows the unit was blocked in the `PAMName=login` session setup before reaching `ExecStart`.
+
+The kiosk is a dedicated system service already configured with `User=exam`; it does not need to emulate an interactive login session. `PAMName=login` was therefore removed. tty ownership and the unprivileged user boundary remain enforced by systemd.

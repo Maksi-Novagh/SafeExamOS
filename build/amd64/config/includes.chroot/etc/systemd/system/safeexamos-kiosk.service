@@ -8,7 +8,6 @@ ConditionPathExists=/dev/tty1
 [Service]
 Type=simple
 User=exam
-PAMName=login
 TTYPath=/dev/tty1
 StandardInput=tty-force
 StandardOutput=journal
