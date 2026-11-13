@@ -22,6 +22,13 @@ Environment=XDG_SESSION_DESKTOP=SafeExamOS
 Environment=SAFEEXAMOS_XKB_LAYOUT=us
 Environment=LIBSEAT_BACKEND=seatd
 Environment=SEATD_SOCK=/run/seatd.sock
+# Software renderer avoids virtio-vga EGL/DRI crashes in the reference VM.
+# Hardware-accelerated wlroots renderer is not certified for this prototype.
+Environment=WLR_RENDERER=pixman
+Environment=WLR_NO_HARDWARE_CURSORS=1
+# Keep shader/cache writes in the private ephemeral runtime, never /home/exam.
+Environment=HOME=/run/safeexamos-exam
+Environment=XDG_CACHE_HOME=/run/safeexamos-exam/cache
 ExecStartPre=/usr/local/sbin/safeexamos-seat-ready
 ExecStart=/usr/local/bin/safeexamos-session
 Restart=on-failure

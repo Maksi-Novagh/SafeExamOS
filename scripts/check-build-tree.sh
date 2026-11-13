@@ -89,6 +89,9 @@ grep -Fq 'systemctl enable seatd.service' "$SEAT_HOOK"
 grep -Fq 'ExecStart=/usr/sbin/seatd -g video' "$SEAT_DROPIN"
 # Never launch Chromium or Cage as root or disable the browser sandbox.
 grep -Fq 'User=exam' "$SEAT_UNIT"
+grep -Fq 'Environment=WLR_RENDERER=pixman' "$SEAT_UNIT"
+grep -Fq 'Environment=XDG_CACHE_HOME=/run/safeexamos-exam/cache' "$SEAT_UNIT"
+grep -Fq 'Environment=HOME=/run/safeexamos-exam' "$SEAT_UNIT"
 
 command -v node >/dev/null 2>&1 || {
   echo "error: Node.js is required for automated launcher fixtures" >&2

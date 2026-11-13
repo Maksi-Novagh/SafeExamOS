@@ -95,3 +95,8 @@ Boot timing, memory and enabled-service measurements will be added as runtime me
 ## Green optimized reference — 2026-11-13
 
 The existing optimized Debian image, including the explicit dependencies `user-setup`, `seatd` and `libseat1`, passed all four jobs in [CI run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740). This verifies the QEMU smoke baseline after dependency pruning, **not** full driver coverage, Lenovo acceptance, latency or RAM benchmarks. Freeze this baseline until interactive input and physical hardware tests exist.
+
+
+### Software graphics baseline — 2026-11-13
+
+After the new framebuffer-content assertion exposed a virtio-vga EGL crash in [run #45](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43428686952), Cage was configured to use wlroots' `pixman` software renderer for now. This prioritizes a reproducible visible UI over unvalidated GPU performance. Benchmark CPU usage, idle memory and Lenovo graphics before revisiting hardware acceleration. No browser sandbox or seatd permission relaxations were made.

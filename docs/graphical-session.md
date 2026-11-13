@@ -100,3 +100,10 @@ Reference: Cage project's systemd boot documentation and Debian's seatd package/
 ## Current evidence and limitations
 
 [Run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740) confirms a live Cage process, a Chromium process referencing the runtime launcher URL, and a PPM framebuffer captured via QEMU. This is not a semantic/pixel screenshot assertion, a verified keyboard/mouse event, nor proof that terminal shortcuts and escape vectors are neutralized. Test UEFI bootloader handoff, Lenovo hardware and safe shutdown separately.
+
+
+## QEMU rendering stability — 2026-11-13
+
+The new visual regression test in [run #45](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43428686952) revealed a black framebuffer and Cage `SIGSEGV` following an EGL/DRI2 initialization failure on the emulated virtio VGA. Earlier process-only graphical smoke tests did not exercise the rendered screen. The current prototype now explicitly uses `WLR_RENDERER=pixman` for its Cage compositor (a documented wlroots software-renderer setting) and software cursors. Chromium remains in app mode, unprivileged and sandboxed.
+
+The service sets `HOME` and `XDG_CACHE_HOME` within `/run/safeexamos-exam` to preserve ephemeral writes and avoid protected `/home/exam`. Once physical hardware testing exists, a separately validated GPU-accelerated configuration may be considered, without weakening the security or visual smoke tests. This change is not considered proven until the next QEMU framebuffer check passes.

@@ -447,3 +447,19 @@ The developer requested no manual test steps. The existing static build-tree che
 The existing graphical QEMU harness now validates the **actual image pixels** for the launcher white panel, dark text and DodgerBlue accent; it waits for a painted screen rather than merely trusting running processes. It then sends a single benign key via QEMU monitor, captures a second screenshot, and requires a visible change. A deterministic keyboard-feedback indicator has been added to the launcher, with focus placed on the typing field. The test is intentionally modest: visual differences could have other causes and do not prove input security, keyboard-layout correctness or exam lockdown.
 
 New scripts: `scripts/verify-framebuffer.py`, `tests/launcher-smoke.cjs`, `tests/preflight-smoke.sh`. The existing GitHub Actions YAML remains unchanged. **These new checks are not marked validated until their first green CI run.**
+
+
+### 2026-11-13 — run #45: framebuffer assertion reveals compositor crash
+
+Run #45 (https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43428686952) passed static checks, ISO build, and the QEMU userspace smoke. The strengthened graphical check then rejected a near-black framebuffer (roughly one million dark pixels; no detected white/blue launcher pixels). The observer's earlier `SAFEEXAMOS_CI_UI_OK` only meant both named processes existed temporarily; it did not mean a visible page.
+
+The guest journal shows repeated Cage crashes with `SIGSEGV`, preceded by `EGL_NOT_INITIALIZED`, DRI2 screen creation errors and a `kms_swrast` fallback. `seatd` itself was up and accepted the unprivileged user, and asynchronous pre-flight emitted `SAFEEXAMOS_PREFLIGHT_OK`. A separate warning indicated that an OpenGL shader cache could not be created under `/home/exam`, which the kiosk's `ProtectHome=true` deliberately protects.
+
+Remediation submitted to the next CI run:
+
+- make the currently unvalidated accelerated wlroots path deterministic and software-rendered with the documented `WLR_RENDERER=pixman` mode;
+- use a software cursor for the reference image (`WLR_NO_HARDWARE_CURSORS=1`);
+- move `HOME` and `XDG_CACHE_HOME` inside the private ephemeral runtime directory, retaining `ProtectHome=true`;
+- retain the framebuffer color checks and keyboard screenshot comparison as **release-blocking** tests, rather than weakening them to obtain green CI.
+
+This is a baseline software-renderer choice for the current prototype, **not** an assertion that it is optimal on the Lenovo or that GPU acceleration is supported. A new full CI pass remains required.

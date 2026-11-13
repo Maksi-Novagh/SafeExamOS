@@ -28,7 +28,7 @@ Current verified milestones (latest full CI pass: [run #42, 2026-11-13](https://
 
 The repository remains documentation-first: implementation, tests and documentation are updated together.
 
-Autonomous regression work (2026-11-13, **CI verification pending**): QEMU visual launcher assertions plus a synthetic key event/screenshot comparison, and deterministic pre-flight/launcher fixtures. These checks do not replace real-hardware certification or proof of exam security.
+Autonomous regression work (2026-11-13): deterministic pre-flight/launcher fixtures passed in run #45, but the stronger QEMU visual assertion exposed a black frame and Cage EGL crash. A software-renderer correction is pending CI validation; no visible-UI success is claimed yet. These checks do not replace real-hardware certification or proof of exam security.
 
 Pre-flight UI includes a typing-test field and a local `Supported / Warning / Blocking` prototype verdict. The graphical CI does **not** exercise keyboard interaction, inspect the UI contents, or certify verdict correctness. Interactive Wi-Fi joining and system-level keyboard-layout switching remain pending.
 
