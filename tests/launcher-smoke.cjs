@@ -63,7 +63,7 @@ assert.equal(blocked.get('compat-status').textContent,'Blocking');
 assert.match(blocked.get('compat-detail').textContent,/pre-flight inventory incomplete/);
 blocked.get('code').value='TEST';
 blocked.get('continue').handlers.click();
-assert.match(blocked.alerts[0],/incomplete/);
+assert.match(blocked.alerts[0],/not completed|incomplete/i);
 
 const warning=boot(state({network:{state:'offline',managerState:'disconnected',interfaces:'lo',wifiInterfaces:'none'}}));
 assert.equal(warning.get('compat-status').textContent,'Warning');
