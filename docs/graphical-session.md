@@ -78,3 +78,8 @@ Further hardening is still required:
 - watchdog/fail-closed screen;
 - no fallback console;
 - production removal of CI-only markers.
+
+
+## Graphical-first startup
+
+The session copies the launcher and a fail-closed default pre-flight snapshot into the private runtime directory, starts bounded hardware probes in the background, and immediately runs Cage with Chromium. No pre-flight operation may hold up the initial graphical window. A completed inventory can update the existing launcher; a failed inventory leaves the exam blocked.

@@ -90,3 +90,8 @@ The collector now writes a **degraded, blocking** snapshot before probing hardwa
 Diagnostics are sent to the systemd journal; the unprivileged kiosk does not write directly to `/dev/ttyS0`.
 
 Run the standalone smoke test manually with `sh tests/preflight-smoke.sh`. This is not yet part of the Actions workflow.
+
+
+## Non-blocking startup and fail-closed state
+
+The kiosk session installs a read-only-image-provided `preflight.js` with `collectorStatus: "degraded"` before starting the browser. This default is intentionally **Blocking**, not a readiness pass. The collector starts asynchronously under a 14-second timeout; on success it atomically updates the runtime pre-flight file. The launcher refreshes the local file to display the new status. Incomplete or failed collection must remain blocking. This design allows the graphical UI to appear even when NetworkManager is unavailable or a hardware probe stalls.

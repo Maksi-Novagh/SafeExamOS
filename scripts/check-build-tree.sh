@@ -8,6 +8,7 @@ build/amd64/build.sh
 build/amd64/config/package-lists/safeexamos.list.chroot
 build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-preflight
+build/amd64/config/includes.chroot/usr/share/safeexamos/launcher/preflight.js
 build/amd64/config/hooks/live/0100-safeexamos-permissions.hook.chroot
 build/amd64/config/hooks/live/0130-safeexamos-kiosk.hook.chroot
 build/amd64/config/hooks/live/0140-safeexamos-lockdown.hook.chroot

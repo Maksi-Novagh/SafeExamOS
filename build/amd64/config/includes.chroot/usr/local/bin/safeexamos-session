@@ -13,24 +13,18 @@ printf "SAFEEXAMOS_SESSION_USER=%s UID=%s RUNTIME=%s\n" "$(id -un)" "$(id -u)" "
 RUNTIME_LAUNCHER="$XDG_RUNTIME_DIR/launcher"
 mkdir -p "$RUNTIME_LAUNCHER"
 cp /usr/share/safeexamos/launcher/index.html "$RUNTIME_LAUNCHER/index.html"
-
-if timeout -k 2s 14s /usr/local/sbin/safeexamos-preflight "$RUNTIME_LAUNCHER"; then
-  echo "SAFEEXAMOS_PREFLIGHT_OK"
-else
-  echo "SAFEEXAMOS_PREFLIGHT_WARNING collector failed or timed out; using blocking fallback" >&2
-fi
-
+cp /usr/share/safeexamos/launcher/preflight.js "$RUNTIME_LAUNCHER/preflight.js"
+echo "SAFEEXAMOS_PREFLIGHT_ASYNC_START"
+(
+  if timeout -k 2s 14s /usr/local/sbin/safeexamos-preflight "$RUNTIME_LAUNCHER"; then
+    echo "SAFEEXAMOS_PREFLIGHT_OK"
+  else
+    echo "SAFEEXAMOS_PREFLIGHT_DEGRADED" >&2
+  fi
+) &
 LAUNCHER="file://$RUNTIME_LAUNCHER/index.html"
-
-if [ ! -s "$RUNTIME_LAUNCHER/preflight.js" ]; then
-  echo "SAFEEXAMOS_SESSION_ERROR preflight-missing" >&2
-  exit 1
-fi
-
-if grep -Fq 'collectorStatus: "degraded"' "$RUNTIME_LAUNCHER/preflight.js"; then
-  echo "SAFEEXAMOS_PREFLIGHT_DEGRADED"
-fi
 echo "SAFEEXAMOS_CAGE_START"
+
 exec cage -d -- chromium \
   --app="$LAUNCHER" \
   --start-fullscreen \

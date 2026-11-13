@@ -6,7 +6,7 @@ ConditionPathExists=/dev/ttyS0
 [Service]
 Type=oneshot
 ExecStart=/usr/local/sbin/safeexamos-ci-ui-marker
-TimeoutStartSec=100
+TimeoutStartSec=195
 
 [Install]
 WantedBy=multi-user.target

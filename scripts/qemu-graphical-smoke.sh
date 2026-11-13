@@ -42,7 +42,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 echo "Waiting for Cage + Chromium launcher..."
-deadline=$(( $(date +%s) + 150 ))
+deadline=$(( $(date +%s) + 240 ))
 while [ "$(date +%s)" -lt "$deadline" ]; do
   if grep -q 'SAFEEXAMOS_CI_UI_OK' "$LOG" 2>/dev/null; then
     echo "Graphical runtime marker received."

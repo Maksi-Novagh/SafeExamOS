@@ -399,3 +399,12 @@ Changes for the next run:
 - a manually runnable regression test simulates a hung `nmcli`.
 
 No GitHub Actions workflow definition was changed.
+
+
+### 2026-10-29 — graphical startup no longer blocks on pre-flight
+
+Run #40 built and booted the ISO, and reached the kiosk service. Its early diagnostic showed the pre-flight collector creating a fallback snapshot; it did not prove where the collector spent the remainder of the graphical smoke timeout.
+
+The boot path now copies a blocking snapshot from the read-only image and starts the collector asynchronously with a 14-second timeout. Cage and Chromium launch without waiting. Once the collector succeeds, it atomically replaces the runtime data and the launcher polls for updates. A failed collection leaves a blocking verdict; it must not be interpreted as exam readiness.
+
+The privileged CI observer emits early journal diagnostics, and the host smoke timeout has been enlarged for software-emulated QEMU. No GitHub Actions workflow YAML changes were made. A fresh green run is still required to validate the new path.

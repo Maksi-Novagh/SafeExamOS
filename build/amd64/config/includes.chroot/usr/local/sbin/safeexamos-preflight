@@ -4,21 +4,7 @@ set -eu
 OUT_DIR="${1:-/run/safeexamos-preflight}"
 mkdir -p "$OUT_DIR"
 
-# Keep a safe, blocking snapshot if an optional hardware probe stalls.
-# The UI must not claim readiness without a complete inventory.
-cat > "$OUT_DIR/preflight.js" <<'JS'
-window.SAFEEXAMOS_PREFLIGHT = {
-  collectorStatus: "degraded",
-  generatedAt: "unavailable",
-  cpu: "unknown", memoryMiB: 0, architecture: "unknown",
-  kernel: "unknown", gpu: "Not detected",
-  network: {state: "offline", managerState: "unknown", detail: "Pre-flight incomplete", interfaces: "none", wifiInterfaces: "none"},
-  keyboard: {layout: "unknown"}, inputDevices: 0,
-  displays: {count: 0, outputs: "unknown"},
-  bootMode: "unknown", ephemeral: "unknown"
-};
-JS
-chmod 0644 "$OUT_DIR/preflight.js"
+# Fallback snapshot installed by session before this optional collector runs.
 
 json_escape() {
   printf '%s' "$1" | awk '

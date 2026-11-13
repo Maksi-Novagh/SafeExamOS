@@ -53,7 +53,7 @@
 </section>
 </main>
 <script>
-(function(){
+function renderPreflight(){
   const p=window.SAFEEXAMOS_PREFLIGHT||null;
   function setIndicator(id,state){const e=document.getElementById(id);e.className='indicator '+state;e.textContent=state==='ok'?'✓':state==='warn'?'!':'×'}
   if(!p){document.getElementById('overall-status').textContent='Pre-flight unavailable';document.getElementById('overall-status').className='status bad';return}
@@ -93,7 +93,24 @@
   const status=document.getElementById('overall-status');
   status.textContent=blocking.length?'Not ready':verdictWarnings.length?'Ready with '+verdictWarnings.length+' warning'+(verdictWarnings.length===1?'':'s'):'System ready';
   status.className='status'+(blocking.length?' bad':verdictWarnings.length?' warn':'');
+}
+renderPreflight();
+(function pollPreflight(){
+  let attempts=0;
+  function retry(){
+    if(window.SAFEEXAMOS_PREFLIGHT && window.SAFEEXAMOS_PREFLIGHT.collectorStatus==='ok') return;
+    if(attempts++>=15) return;
+    const script=document.createElement('script');
+    script.src='preflight.js?check='+attempts;
+    script.onload=function(){
+      renderPreflight();
+      if(window.SAFEEXAMOS_PREFLIGHT.collectorStatus!=='ok') setTimeout(retry,1500);
+    };
+    script.onerror=function(){setTimeout(retry,1500);};
+    document.head.appendChild(script);
+  }
+  setTimeout(retry,1500);
 })();
-document.getElementById('continue').addEventListener('click',function(){var f=document.getElementById('code');if(!f.value.trim()){f.focus();return;}alert('Prototype only: exam retrieval is not implemented yet.');});
+document.getElementById('continue').addEventListener('click',function(){var f=document.getElementById('code');if(!f.value.trim()){f.focus();return;}if(document.getElementById('compat-status').textContent==='Blocking'){alert('Pre-flight has not completed.');return;}alert('Prototype only: exam retrieval is not implemented yet.');});
 </script>
 </body></html>

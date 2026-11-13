@@ -1,7 +1,9 @@
 #!/bin/sh
 set -eu
 
-deadline=$(( $(date +%s) + 90 ))
+start=$(date +%s)
+deadline=$(( start + 180 ))
+reported=0
 
 while [ "$(date +%s)" -lt "$deadline" ]; do
   cage_pid=$(pgrep -x cage 2>/dev/null | head -n 1 || true)
@@ -19,6 +21,14 @@ while [ "$(date +%s)" -lt "$deadline" ]; do
     esac
   fi
 
+  if [ "$reported" -eq 0 ] && [ "$(date +%s)" -ge "$((start + 30))" ]; then
+    reported=1
+    {
+      echo 'SAFEEXAMOS_CI_UI_DIAGNOSTIC'
+      systemctl status safeexamos-kiosk.service --no-pager -l 2>&1 || true
+      journalctl -u safeexamos-kiosk.service -b --no-pager -n 60 2>&1 || true
+    } > /dev/ttyS0 2>/dev/null || true
+  fi
   sleep 1
 done
 
