@@ -21,7 +21,7 @@ This roadmap is deliberately evidence-driven. A checkbox only means the item is 
 
 - [x] Define QEMU amd64 reference profile
 - [x] Define Lenovo V15 G2 ALC (82KD) target profile
-- [ ] Validate optimized ISO in QEMU after image trimming
+- [x] Validate optimized ISO in QEMU after image trimming (run #42: build + direct-kernel boot + graphical smoke)
 - [ ] Collect Lenovo hardware IDs from physical boot
 - [ ] Validate Lenovo display/keyboard/touchpad/Wi-Fi
 - [ ] Validate clean shutdown and ephemeral-state destruction

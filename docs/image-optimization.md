@@ -90,3 +90,8 @@ The report currently records:
 - package-entry count from `/live/filesystem.packages`.
 
 Boot timing, memory and enabled-service measurements will be added as runtime metrics once the optimized image has been validated.
+
+
+## Green optimized reference — 2026-11-13
+
+The existing optimized Debian image, including the explicit dependencies `user-setup`, `seatd` and `libseat1`, passed all four jobs in [CI run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740). This verifies the QEMU smoke baseline after dependency pruning, **not** full driver coverage, Lenovo acceptance, latency or RAM benchmarks. Freeze this baseline until interactive input and physical hardware tests exist.

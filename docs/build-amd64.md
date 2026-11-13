@@ -12,25 +12,25 @@ Boot directly into a SafeExamOS-styled launcher without installing or depending 
 - **Cage** as the initial single-application Wayland compositor. SafeExamOS does not pass Cage's `-s` option, which is the option that enables VT switching.
 - **Chromium** as the first browser target. Sharing a Chromium family with SEB Windows does not imply SEB compatibility.
 - **NetworkManager** for Ethernet/Wi-Fi pre-flight support.
+- **seatd/libseat** for privileged seat brokering while Cage and Chromium remain unprivileged.
 
-## Boot flow
+## Verified QEMU boot flow — 2026-11-13
 
 ```text
-UEFI/BIOS
-  -> Debian live boot
-  -> systemd
-  -> safeexamos-kiosk.service
-  -> unprivileged exam user
-  -> safeexamos-session
-  -> pre-flight collector
-  -> Cage
-  -> Chromium kiosk
-  -> runtime launcher
+QEMU direct kernel/initrd + ISO live medium
+  → systemd + seatd
+  → safeexamos-kiosk.service (User=exam)
+  → seat socket readiness check
+  → safeexamos-session
+      ├─ install fail-closed preflight snapshot; collect asynchronously
+      └─ Cage → Chromium --app → local launcher
 ```
+
+[Run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740) passed all four jobs, including framebuffer capture. This **does not** test the ISO bootloader/UEFI menu handoff.
 
 ## Persistence model
 
-The first prototype relies on Debian Live's ephemeral overlay and explicitly puts the Chromium profile below `/run/user/<uid>/safeexamos-chromium`.
+The first prototype relies on Debian Live's ephemeral overlay and puts the Chromium profile below `/run/safeexamos-exam/chromium`.
 
 This must later be hardened and tested for downloads, crash dumps, swap, caches and approved exports.
 
@@ -40,7 +40,7 @@ This must later be hardened and tested for downloads, crash dumps, swap, caches 
 - no full desktop is installed;
 - SysRq is disabled;
 - kernel pointer visibility and dmesg access are restricted;
-- Cage is launched without VT-switch permission.
+- Cage launches without its optional VT switching flag, and seatd brokers its required device access.
 
 This is **not** a complete lockdown.
 

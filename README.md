@@ -11,26 +11,26 @@ SafeExamOS explores a complementary security model for digital examinations:
 
 ## Project status
 
-**Research / architecture / functional boot prototype. Not ready for real examinations.**
+**Functional graphical amd64 prototype validated in QEMU. Not ready for real examinations.**
 
-**Roadmap progress: 23%** — `█████░░░░░░░░░░░░░░░`
+**Roadmap progress: 24%** — `█████░░░░░░░░░░░░░░░`
 
 > Progress is the ratio of completed roadmap milestones, **not** a security/readiness score. SafeExamOS is not yet suitable for production examinations.
 
-Current verified milestones:
+Current verified milestones (latest full CI pass: [run #42, 2026-11-13](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740), commit `28388848`):
 
 - CI-built Debian 13 amd64 ISO;
 - automated QEMU userspace boot;
-- automated Cage + Chromium graphical launcher boot;
+- automated Cage + Chromium single-app graphical launcher boot using unprivileged `exam` and the seatd broker;
 - dedicated unprivileged `exam` kiosk service;
-- local hardware/network pre-flight inventory integrated into the verified graphical boot path;
+- asynchronous hardware/network pre-flight with a fail-closed initial snapshot;
 - framebuffer evidence captured by CI.
 
 The repository remains documentation-first: implementation, tests and documentation are updated together.
 
-Latest pre-flight work (validation pending): keyboard typing test and a local `Supported / Warning / Blocking` compatibility verdict. Interactive Wi-Fi joining and system-level keyboard-layout switching are still pending.
+Pre-flight UI includes a typing-test field and a local `Supported / Warning / Blocking` prototype verdict. The graphical CI does **not** exercise keyboard interaction, inspect the UI contents, or certify verdict correctness. Interactive Wi-Fi joining and system-level keyboard-layout switching remain pending.
 
-Current one-week target (2026-11-04): full prototype acceptance on the QEMU amd64 reference VM and Lenovo V15 G2 ALC (82KD), plus broad amd64 feature coverage. See the release-target document for exact pass/fail criteria.
+The original **2026-11-04** reference-acceptance deadline has passed without full completion. Run #42 verifies QEMU graphical **smoke**, not UEFI bootloader handoff, live keyboard input, clean state destruction or Lenovo hardware. See the [historical release-target checklist](docs/release-target-2026-11-04.md) and the [next validation plan](docs/next-steps.md).
 
 ## Target workflow
 
@@ -140,6 +140,7 @@ Key upstream observations:
 - [Pre-flight subsystem](docs/preflight.md)
 - [Graphical session](docs/graphical-session.md)
 - [CI verification](docs/ci.md)
+- [Next validation plan](docs/next-steps.md)
 - [Image optimization](docs/image-optimization.md)
 - [Release target — 2026-11-04](docs/release-target-2026-11-04.md)
 - [Proctoring and privacy](docs/proctoring-and-privacy.md)

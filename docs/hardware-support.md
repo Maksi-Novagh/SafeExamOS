@@ -189,3 +189,8 @@ Current reference profiles:
 - `lenovo-v15-g2-alc-82kd.json`: physical development target.
 
 The Lenovo profile intentionally leaves Wi-Fi, Ethernet, input and DRM identifiers unknown until they are collected from SafeExamOS running on the actual laptop. Marketing-model assumptions are not accepted as certification evidence.
+
+
+## Current evidence — 2026-11-13
+
+The virtual QEMU amd64 profile has a successful userspace and graphical smoke in [run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740). The Lenovo 82KD remains **unvalidated** on real hardware; chipset IDs and required device tests must be collected before assigning support/certification status.

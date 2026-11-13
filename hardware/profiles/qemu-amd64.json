@@ -17,6 +17,16 @@
     "userspace_boot": true,
     "graphical_launcher": true,
     "framebuffer_capture": true,
-    "physical_input": false
+    "physical_input": false,
+    "interactive_input": false,
+    "uefi_bootloader": false,
+    "clean_session_teardown": false
+  },
+  "evidence": {
+    "last_green_ci_date": "2026-11-13",
+    "run_number": 42,
+    "commit": "28388848bbf78baf7acb709d5807abf0c3c1df22",
+    "run_url": "https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740",
+    "scope": "direct-kernel QEMU userspace and graphical process/framebuffer smoke"
   }
 }

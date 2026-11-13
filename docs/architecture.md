@@ -30,7 +30,7 @@ The first prototype may use a conventional Debian live image. Production securit
 
 ### 2. Pre-flight environment
 
-A first read-only pre-flight collector is now implemented on amd64. It runs inside the unprivileged kiosk session before Chromium starts and writes local runtime data consumed by the launcher.
+A first read-only pre-flight collector is implemented on amd64. The unprivileged kiosk copies an initial blocking snapshot, launches the bounded collector asynchronously and starts Cage/Chromium without waiting. Successful collection atomically updates local data consumed by the launcher.
 
 Current implementation reports CPU, RAM, GPU, network/default route, NetworkManager state, interfaces, keyboard layout, input count, connected DRM outputs, boot mode and ephemeral-root status.
 
@@ -93,7 +93,7 @@ Browser command-line kiosk flags are convenience controls, not a complete lockdo
 
 ### 6. Wayland kiosk layer
 
-The amd64 prototype now uses **Cage** and launches it through `safeexamos-kiosk.service` as the unprivileged `exam` user. This path is covered by an automated QEMU graphical smoke test.
+The amd64 prototype uses **Cage** via `safeexamos-kiosk.service` as unprivileged `exam`, with a dedicated `seatd.service` mediating DRM/input device access. This complete path passed the automated QEMU graphical smoke in [run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740).
 
 Cage is intentionally used to run a single maximized application.
 

@@ -38,6 +38,7 @@ The image currently:
 - masks `debug-shell.service`;
 - masks `ctrl-alt-del.target`;
 - runs the graphical session as the unprivileged `exam` user;
+- uses a seatd broker with a socket restricted to the `video` group instead of launching Cage as root;
 - restarts the kiosk service on failure;
 - applies `NoNewPrivileges`;
 - uses a private `/tmp`;
@@ -62,3 +63,8 @@ The following are still not considered solved:
 - security regression automation for shortcut attempts.
 
 The defensive threat catalog in `docs/escape-and-cheating-catalog.md` remains the authoritative backlog.
+
+
+## 2026-11-13 QEMU evidence
+
+[Run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740) passed the graphical smoke and captured a framebuffer after the seatd correction. It **does not** validate the shortcut restrictions, TTY escape resistance, storage erasure, device hotplug or physical hardware.

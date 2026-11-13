@@ -6,18 +6,20 @@ Status: **prototype implementation**
 
 SafeExamOS must enter its launcher directly after boot without exposing a normal login prompt or depending on shell startup files.
 
-## Current flow
+## Verified QEMU boot flow — 2026-11-13
 
 ```text
-systemd
-  -> safeexamos-kiosk.service
-  -> system seatd daemon (root; restricted video-group socket)
-  -> unprivileged exam kiosk session
-  -> dedicated XDG runtime directory
-  -> /usr/local/bin/safeexamos-session
-  -> Cage
-  -> Chromium kiosk
-  -> SafeExamOS launcher
+Debian 13 live system → systemd
+  ├─ seatd.service (root seat broker; socket restricted to video group)
+  └─ safeexamos-kiosk.service (requires seatd; User=exam)
+      → safeexamos-seat-ready (socket permission check)
+      → XDG_RUNTIME_DIR=/run/safeexamos-exam
+      → safeexamos-session
+          ├─ install fail-closed preflight.js
+          ├─ start bounded pre-flight collector asynchronously
+          └─ Cage (unprivileged; libseat backend=seatd)
+              → Chromium --app=... --start-fullscreen
+                  → local launcher; polls preflight.js
 ```
 
 ## Why the design changed
@@ -47,7 +49,7 @@ The kiosk is now an explicit systemd service.
 
 ## Runtime diagnostics
 
-The session writes minimal CI/debug lifecycle markers to the serial console:
+The unprivileged session writes lifecycle markers to the systemd journal; root-owned CI observers export diagnostics to the emulated serial console:
 
 ```text
 SAFEEXAMOS_SESSION_START
@@ -90,6 +92,11 @@ The session copies the launcher and a fail-closed default pre-flight snapshot in
 
 The earlier graphical test reached Cage but failed with libseat errors because `exam` did not have a functional seat/session broker. Debian's `seatd` package now supplies a system daemon; a small systemd drop-in fixes socket ownership to group `video`. The kiosk unit requires `seatd.service` and sets `LIBSEAT_BACKEND=seatd`, while remaining `User=exam` with `NoNewPrivileges=true` and its existing service sandbox.
 
-Before starting Cage, `safeexamos-seat-ready` checks that `/run/seatd.sock` is accessible to the unprivileged service account, failing closed with an explicit diagnostic otherwise. Do not make the socket world-writable or run the browser as root. Changes still require a green QEMU graphical smoke test and physical hardware validation.
+Before starting Cage, `safeexamos-seat-ready` checks that `/run/seatd.sock` is accessible to the unprivileged service account, failing closed with an explicit diagnostic otherwise. Do not make the socket world-writable or run the browser as root. The seatd correction passed the QEMU graphical smoke in [run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740) on 2026-11-13. Physical hardware, interactive input and real lockdown are **not** yet validated.
 
 Reference: Cage project's systemd boot documentation and Debian's seatd package/man page.
+
+
+## Current evidence and limitations
+
+[Run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740) confirms a live Cage process, a Chromium process referencing the runtime launcher URL, and a PPM framebuffer captured via QEMU. This is not a semantic/pixel screenshot assertion, a verified keyboard/mouse event, nor proof that terminal shortcuts and escape vectors are neutralized. Test UEFI bootloader handoff, Lenovo hardware and safe shutdown separately.

@@ -1,6 +1,6 @@
 # Continuous integration
 
-Status: **active design / first implementation**
+Status: **four-job green QEMU smoke baseline — 2026-11-13 (run #42)**
 
 SafeExamOS uses GitHub Actions as a reproducible verification layer.
 
@@ -146,13 +146,13 @@ This test boots the exact kernel/initrd from the generated ISO with a virtual VG
 - `cage`;
 - `chromium`.
 
-They must remain alive across consecutive checks. Only then does the guest emit:
+The observer checks that both processes exist and that Chromium's command line contains the launcher path. Only then does the guest emit:
 
 ```text
 SAFEEXAMOS_CI_UI_OK
 ```
 
-The host then asks QEMU through QMP to capture the current virtual framebuffer to:
+The host then asks QEMU's monitor (HMP) to capture the current virtual framebuffer to:
 
 ```text
 .ci/safeexamos-launcher.ppm
@@ -425,3 +425,16 @@ Fix prepared for the next run:
 - add build-tree checks and capture both kiosk and seatd diagnostics on failure.
 
 No browser sandbox, DRM permission broadening, or direct root execution of Cage is introduced. A successful CI run with a rendered framebuffer is still needed to verify the fix.
+
+
+### 2026-11-13 — run #42: complete green optimized QEMU baseline
+
+- Commit: `28388848bbf78baf7acb709d5807abf0c3c1df22`.
+- Workflow: [run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740), **SUCCESS**, completed 2026-11-13.
+- Jobs: **Static checks PASS; Build amd64 live ISO PASS; QEMU boot smoke PASS; QEMU graphical launcher smoke PASS**.
+- Graphical log: `Graphical runtime marker received`, `Captured graphical framebuffer: .ci/qemu-ui/safeexamos-ui.ppm`, `QEMU graphical smoke test: PASS`.
+- Artifacts: ISO + SHA-256; serial log/QEMU stderr/framebuffer evidence. GitHub currently retains these artifacts for 14 days.
+
+Run #41 had failed at the Cage DRM/VT seat boundary: `Could not get primary session for user` and `Could not open tty0`. Run #42 incorporates a dedicated `seatd` broker for the unprivileged `exam` user and passes the graphical smoke.
+
+**Scope:** the CI boots kernel/initrd directly from the generated ISO, with that ISO attached as the live medium. A green run verifies process startup and a valid PPM capture. It does **not** prove pixel-accurate UI, real keyboard/pointer events, UEFI bootloader handoff, persistent-state erasure, shortcut security, full SEB interoperability, or Lenovo hardware compatibility.

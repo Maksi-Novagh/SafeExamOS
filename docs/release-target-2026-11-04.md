@@ -1,8 +1,8 @@
 # Release target — 2026-11-04
 
-Status: **active development target**
+Status: **historical deadline; full acceptance not achieved by 2026-11-04**
 
-Goal: produce a SafeExamOS prototype that is fully usable on the two reference targets and broadly usable on common amd64 PCs.
+Original goal: produce a SafeExamOS prototype that is fully usable on the two reference targets and broadly usable on common amd64 PCs.
 
 ## Reference target A — QEMU amd64
 
@@ -124,3 +124,21 @@ For every optimization batch record:
 - Lenovo physical result.
 
 If an optimization breaks the Lenovo target or the VM, revert it before continuing.
+
+
+## Retrospective as of 2026-11-13
+
+The original deadline is past. Full QEMU and Lenovo reference acceptance was **not demonstrated**, but [CI run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740) passed four automated jobs on 2026-11-13 with commit `28388848`.
+
+| Requirement | QEMU amd64 | Lenovo 82KD |
+| --- | --- | --- |
+| ISO construction and structure | PASS (#42) | ISO not physically booted |
+| Direct-kernel userspace boot | PASS (#42) | Not tested |
+| Cage/Chromium process startup and framebuffer | PASS (#42) | Not tested |
+| Pre-flight and launcher interaction/typing | Not fully verified | Not tested |
+| ISO bootloader/UEFI boot | Not tested by this run | Not tested |
+| Clean shutdown, state destruction, restart safety | Not verified | Not verified |
+| Security shortcut/escape regression | Not verified | Not verified |
+| Image and runtime metrics acceptance package | Incomplete | Incomplete |
+
+The 70% general amd64 target was an aspiration for **feature coverage**, never a measured proportion of compatible computer models. No certification is claimed. See [next steps](next-steps.md).
