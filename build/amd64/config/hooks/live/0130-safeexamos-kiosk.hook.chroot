@@ -15,4 +15,6 @@ done
 
 passwd -l exam >/dev/null 2>&1 || true
 systemctl mask getty@tty1.service >/dev/null 2>&1 || true
+# seatd owns the VT/DRM input mediation; Cage remains unprivileged.
+systemctl enable seatd.service
 systemctl enable safeexamos-kiosk.service

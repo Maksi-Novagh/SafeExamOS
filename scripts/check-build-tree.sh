@@ -8,6 +8,8 @@ build/amd64/build.sh
 build/amd64/config/package-lists/safeexamos.list.chroot
 build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-preflight
+build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-seat-ready
+build/amd64/config/includes.chroot/etc/systemd/system/seatd.service.d/10-safeexamos.conf
 build/amd64/config/includes.chroot/usr/share/safeexamos/launcher/preflight.js
 build/amd64/config/hooks/live/0100-safeexamos-permissions.hook.chroot
 build/amd64/config/hooks/live/0130-safeexamos-kiosk.hook.chroot
@@ -42,7 +44,7 @@ done
 PKGS=build/amd64/config/package-lists/safeexamos.list.chroot
 SESSION=build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session
 
-for pkg in cage chromium network-manager user-setup; do
+for pkg in cage chromium network-manager user-setup seatd libseat1; do
   grep -Eq "^$pkg$" "$PKGS" || {
     echo "error: required runtime package missing: $pkg" >&2
     exit 1
@@ -71,5 +73,18 @@ fi
 
 grep -Fq '"BrowserGuestModeEnabled": false' build/amd64/config/includes.chroot/etc/chromium/policies/managed/safeexamos.json
 grep -Fq 'NAutoVTs=0' build/amd64/config/includes.chroot/etc/systemd/logind.conf.d/50-safeexamos.conf
+
+SEAT_UNIT=build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-kiosk.service
+SEAT_HOOK=build/amd64/config/hooks/live/0130-safeexamos-kiosk.hook.chroot
+SEAT_DROPIN=build/amd64/config/includes.chroot/etc/systemd/system/seatd.service.d/10-safeexamos.conf
+
+grep -Fq 'Requires=seatd.service' "$SEAT_UNIT"
+grep -Fq 'After=live-config.service' "$SEAT_UNIT"
+grep -Fq 'Environment=LIBSEAT_BACKEND=seatd' "$SEAT_UNIT"
+grep -Fq 'ExecStartPre=/usr/local/sbin/safeexamos-seat-ready' "$SEAT_UNIT"
+grep -Fq 'systemctl enable seatd.service' "$SEAT_HOOK"
+grep -Fq 'ExecStart=/usr/sbin/seatd -g video' "$SEAT_DROPIN"
+# Never launch Chromium or Cage as root or disable the browser sandbox.
+grep -Fq 'User=exam' "$SEAT_UNIT"
 
 echo "Build tree check: PASS"

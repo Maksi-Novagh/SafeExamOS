@@ -408,3 +408,20 @@ Run #40 built and booted the ISO, and reached the kiosk service. Its early diagn
 The boot path now copies a blocking snapshot from the read-only image and starts the collector asynchronously with a 14-second timeout. Cage and Chromium launch without waiting. Once the collector succeeds, it atomically replaces the runtime data and the launcher polls for updates. A failed collection leaves a blocking verdict; it must not be interpreted as exam readiness.
 
 The privileged CI observer emits early journal diagnostics, and the host smoke timeout has been enlarged for software-emulated QEMU. No GitHub Actions workflow YAML changes were made. A fresh green run is still required to validate the new path.
+
+
+### 2026-11-13 — Run #41: Cage cannot acquire DRM seat
+
+Run #41 successfully completed static checks, ISO build, userspace boot, and the asynchronous pre-flight inventory. The kiosk logs show `SAFEEXAMOS_CAGE_START` and `SAFEEXAMOS_PREFLIGHT_OK`, but wlroots/libseat reported `Could not get primary session for user`, `Could not open tty0 ... Permission denied`, `Timeout waiting session to become active`, and `Unable to create the wlroots backend`.
+
+The exam user is unprivileged, and the project removed its old interactive `PAMName=login` session after the earlier PAM stall. Consequently, no working session/seat broker was available to grant Cage access to the DRM and input devices. This is **not** a pre-flight or Chromium failure.
+
+Fix prepared for the next run:
+
+- install Debian Trixie's `seatd` and `libseat1` explicitly with recommended packages disabled;
+- run the system seatd daemon as root and expose its socket only to group `video`;
+- keep `exam` in group `video` and force the `seatd` libseat backend;
+- order the unprivileged kiosk service after `seatd.service`, with a bounded socket readiness check;
+- add build-tree checks and capture both kiosk and seatd diagnostics on failure.
+
+No browser sandbox, DRM permission broadening, or direct root execution of Cage is introduced. A successful CI run with a rendered framebuffer is still needed to verify the fix.

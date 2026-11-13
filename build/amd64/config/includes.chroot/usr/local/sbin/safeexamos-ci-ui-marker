@@ -26,6 +26,8 @@ while [ "$(date +%s)" -lt "$deadline" ]; do
     {
       echo 'SAFEEXAMOS_CI_UI_DIAGNOSTIC'
       systemctl status safeexamos-kiosk.service --no-pager -l 2>&1 || true
+      systemctl status seatd.service --no-pager -l 2>&1 || true
+      ls -l /run/seatd.sock 2>&1 || true
       journalctl -u safeexamos-kiosk.service -b --no-pager -n 60 2>&1 || true
     } > /dev/ttyS0 2>/dev/null || true
   fi
@@ -36,6 +38,8 @@ done
   echo 'SAFEEXAMOS_CI_UI_TIMEOUT'
   echo 'SAFEEXAMOS_CI_KIOSK_JOURNAL_BEGIN'
   journalctl -u safeexamos-kiosk.service -b --no-pager -n 90 2>&1 || true
+  echo '--- seatd journal ---'
+  journalctl -u seatd.service -b --no-pager -n 50 2>&1 || true
   echo 'SAFEEXAMOS_CI_KIOSK_JOURNAL_END'
 } > /dev/ttyS0 2>/dev/null || true
 exit 1

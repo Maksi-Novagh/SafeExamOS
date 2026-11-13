@@ -1,7 +1,8 @@
 [Unit]
 Description=SafeExamOS kiosk session
-After=live-config.service systemd-user-sessions.service systemd-logind.service NetworkManager.service
+After=live-config.service systemd-user-sessions.service systemd-logind.service NetworkManager.service seatd.service
 Wants=live-config.service systemd-logind.service
+Requires=seatd.service
 Conflicts=getty@tty1.service
 ConditionPathExists=/dev/tty1
 
@@ -19,6 +20,9 @@ Environment=XDG_SESSION_TYPE=wayland
 Environment=XDG_CURRENT_DESKTOP=SafeExamOS
 Environment=XDG_SESSION_DESKTOP=SafeExamOS
 Environment=SAFEEXAMOS_XKB_LAYOUT=us
+Environment=LIBSEAT_BACKEND=seatd
+Environment=SEATD_SOCK=/run/seatd.sock
+ExecStartPre=/usr/local/sbin/safeexamos-seat-ready
 ExecStart=/usr/local/bin/safeexamos-session
 Restart=on-failure
 RestartSec=2

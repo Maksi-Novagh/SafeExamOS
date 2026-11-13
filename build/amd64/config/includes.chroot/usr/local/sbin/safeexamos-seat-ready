@@ -1,0 +1,20 @@
+#!/bin/sh
+set -eu
+
+# Runs as the unprivileged exam user, not as root.
+# A socket that is inaccessible to this user is not a usable seat.
+socket=/run/seatd.sock
+i=0
+while [ "$i" -lt 15 ]; do
+  if [ -S "$socket" ] && [ -r "$socket" ] && [ -w "$socket" ]; then
+    echo "SAFEEXAMOS_SEATD_READY"
+    exit 0
+  fi
+  i=$((i + 1))
+  sleep 1
+done
+
+echo "SAFEEXAMOS_SEATD_ERROR: seatd socket missing or inaccessible to exam" >&2
+id >&2 || true
+ls -l "$socket" >&2 || true
+exit 1

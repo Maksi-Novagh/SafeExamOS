@@ -11,7 +11,8 @@ SafeExamOS must enter its launcher directly after boot without exposing a normal
 ```text
 systemd
   -> safeexamos-kiosk.service
-  -> PAM/logind session for user exam
+  -> system seatd daemon (root; restricted video-group socket)
+  -> unprivileged exam kiosk session
   -> dedicated XDG runtime directory
   -> /usr/local/bin/safeexamos-session
   -> Cage
@@ -36,8 +37,8 @@ The kiosk is now an explicit systemd service.
 `safeexamos-kiosk.service`:
 
 - runs as the unprivileged `exam` user;
-- opens a PAM/login session;
-- owns `tty1`;
+- uses a dedicated seatd broker instead of an interactive PAM login;
+- reserves `tty1` for the graphical surface;
 - conflicts with the normal `getty@tty1` prompt;
 - receives a private runtime directory;
 - starts only the SafeExamOS session command;
@@ -83,3 +84,12 @@ Further hardening is still required:
 ## Graphical-first startup
 
 The session copies the launcher and a fail-closed default pre-flight snapshot into the private runtime directory, starts bounded hardware probes in the background, and immediately runs Cage with Chromium. No pre-flight operation may hold up the initial graphical window. A completed inventory can update the existing launcher; a failed inventory leaves the exam blocked.
+
+
+## Seat/DRM access (2026-11-13)
+
+The earlier graphical test reached Cage but failed with libseat errors because `exam` did not have a functional seat/session broker. Debian's `seatd` package now supplies a system daemon; a small systemd drop-in fixes socket ownership to group `video`. The kiosk unit requires `seatd.service` and sets `LIBSEAT_BACKEND=seatd`, while remaining `User=exam` with `NoNewPrivileges=true` and its existing service sandbox.
+
+Before starting Cage, `safeexamos-seat-ready` checks that `/run/seatd.sock` is accessible to the unprivileged service account, failing closed with an explicit diagnostic otherwise. Do not make the socket world-writable or run the browser as root. Changes still require a green QEMU graphical smoke test and physical hardware validation.
+
+Reference: Cage project's systemd boot documentation and Debian's seatd package/man page.

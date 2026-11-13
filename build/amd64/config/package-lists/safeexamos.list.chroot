@@ -5,6 +5,8 @@ systemd-sysv
 dbus
 libpam-systemd
 cage
+seatd
+libseat1
 chromium
 chromium-sandbox
 network-manager
