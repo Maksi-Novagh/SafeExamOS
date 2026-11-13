@@ -6,7 +6,7 @@
 <title>SafeExamOS</title>
 <style>
 :root{font-family:"Segoe UI","Noto Sans","Liberation Sans",sans-serif;color:#000;background:#f0f0f0;--accent:dodgerblue;--hover:lightblue;--muted:dimgray;--ok:#2f7d32;--warn:#8a6d3b;--bad:#a94442}
-*{box-sizing:border-box}body{margin:0;background:#f0f0f0;font-size:14px}main{min-height:100vh;display:grid;place-items:center;padding:24px}.window{width:min(900px,100%);background:#fff;border:1px solid var(--accent)}header,.panel,footer,.notice{padding:18px 20px}header{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid #ddd}h1{font-size:24px;margin:0;font-weight:600}h2{font-size:16px;margin:0 0 14px}.product,.muted{color:var(--muted)}.product{font-size:12px;margin-bottom:4px}.notice{font-size:12px;color:var(--muted);background:#f8f8f8;border-bottom:1px solid #ddd}.panel{border-bottom:1px solid #ddd}.row{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}.actions{display:grid;grid-template-columns:1fr auto;gap:8px}input,button{font:inherit}input{min-height:36px;padding:7px 9px;border:1px solid #aaa}button{min-height:34px;padding:6px 12px;border:1px solid transparent;background:transparent;cursor:pointer}button:hover{background:var(--hover);border-color:var(--accent)}button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}.checks{list-style:none;padding:0;margin:0;border-top:1px solid #e4e4e4}.checks li{display:grid;grid-template-columns:28px 190px 1fr;gap:8px;min-height:40px;align-items:center;border-bottom:1px solid #e4e4e4}.indicator{font-weight:700;text-align:center}.indicator.ok{color:var(--ok)}.indicator.warn{color:var(--warn)}.indicator.bad{color:var(--bad)}footer{display:flex;justify-content:space-between;gap:12px;background:#f0f0f0}.status{border:1px solid var(--ok);padding:5px 8px;font-size:12px;align-self:flex-start}.status.warn{border-color:var(--warn)}.status.bad{border-color:var(--bad)}.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;margin-top:10px}.summary div{border-bottom:1px solid #eee;padding:6px 0}.summary strong{display:inline-block;min-width:110px}@media(max-width:680px){main{padding:8px}.row,.actions,.summary{grid-template-columns:1fr}.checks li{grid-template-columns:28px 1fr}.checks .detail{grid-column:2}header,footer{flex-direction:column}}
+*{box-sizing:border-box}body{margin:0;background:#f0f0f0;font-size:14px}main{min-height:100vh;display:grid;place-items:center;padding:24px}.window{width:min(900px,100%);background:#fff;border:1px solid var(--accent)}header,.panel,footer,.notice{padding:18px 20px}header{display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid #ddd}h1{font-size:24px;margin:0;font-weight:600}h2{font-size:16px;margin:0 0 14px}.product,.muted{color:var(--muted)}.product{font-size:12px;margin-bottom:4px}.notice{font-size:12px;color:var(--muted);background:#f8f8f8;border-bottom:1px solid #ddd}.panel{border-bottom:1px solid #ddd}.row{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}.actions{display:grid;grid-template-columns:1fr auto;gap:8px}input,button{font:inherit}input{min-height:36px;padding:7px 9px;border:1px solid #aaa}button{min-height:34px;padding:6px 12px;border:1px solid transparent;background:transparent;cursor:pointer}button:hover{background:var(--hover);border-color:var(--accent)}button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}.checks{list-style:none;padding:0;margin:0;border-top:1px solid #e4e4e4}.checks li{display:grid;grid-template-columns:28px 190px 1fr;gap:8px;min-height:40px;align-items:center;border-bottom:1px solid #e4e4e4}.indicator{font-weight:700;text-align:center}.indicator.ok{color:var(--ok)}.indicator.warn{color:var(--warn)}.indicator.bad{color:var(--bad)}footer{display:flex;justify-content:space-between;gap:12px;background:#f0f0f0}.status{border:1px solid var(--ok);padding:5px 8px;font-size:12px;align-self:flex-start}.status.warn{border-color:var(--warn)}.status.bad{border-color:var(--bad)}.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 18px;margin-top:10px}.summary div{border-bottom:1px solid #eee;padding:6px 0}.summary strong{display:inline-block;min-width:110px}.keyboard-status{margin:8px 0 0 164px;padding:6px 9px;min-height:28px;border-left:3px solid #ddd;color:var(--muted);font-size:12px}.keyboard-status.verified{border-color:var(--ok);background:#eaf5ed;color:var(--ok);font-weight:600}@media(max-width:680px){main{padding:8px}.row,.actions,.summary{grid-template-columns:1fr}.checks li{grid-template-columns:28px 1fr}.checks .detail{grid-column:2}header,footer{flex-direction:column}.keyboard-status{margin-left:0}}
 </style>
 <script src="preflight.js"></script>
 </head>
@@ -24,7 +24,8 @@
 </section>
 <section class="panel">
 <h2>Keyboard</h2>
-<div class="row"><label for="typing-test">Typing test</label><input id="typing-test" placeholder="Type here to verify your keyboard"></div>
+<div class="row"><label for="typing-test">Typing test</label><input id="typing-test" placeholder="Type here to verify your keyboard" autofocus></div>
+<div class="keyboard-status" id="keyboard-typing-feedback" role="status" aria-live="polite">No keyboard input detected yet</div>
 </section>
 <section class="panel">
 <h2>Compatibility verdict</h2>
@@ -61,7 +62,12 @@ function renderPreflight(){
   setIndicator('network-indicator',online?'ok':'warn');
   document.getElementById('network-detail').textContent=(online?'Connected · ':'No default route · ')+(p.network.managerState||'unknown');
   setIndicator('keyboard-indicator',p.keyboard&&p.keyboard.layout?'ok':'warn');
-  document.getElementById('keyboard-detail').textContent='Layout: '+((p.keyboard&&p.keyboard.layout)||'unknown');
+  const typing=document.getElementById('typing-test');
+  const typed=typing.value.length>0;
+  const feedback=document.getElementById('keyboard-typing-feedback');
+  feedback.textContent=typed?'Keyboard input detected':'No keyboard input detected yet';
+  feedback.className=typed?'keyboard-status verified':'keyboard-status';
+  document.getElementById('keyboard-detail').textContent='Layout: '+((p.keyboard&&p.keyboard.layout)||'unknown')+(typed?' · Input detected':' · Typing test pending');
   setIndicator('display-indicator',p.displays&&p.displays.count>0?'ok':'warn');
   document.getElementById('display-detail').textContent=(p.displays?p.displays.count:0)+' connected · '+((p.displays&&p.displays.outputs)||'unknown');
   setIndicator('input-indicator',p.inputDevices>0?'ok':'warn');
@@ -111,6 +117,8 @@ renderPreflight();
   }
   setTimeout(retry,1500);
 })();
+document.getElementById('typing-test').addEventListener('input',renderPreflight);
+document.getElementById('typing-test').focus();
 document.getElementById('continue').addEventListener('click',function(){var f=document.getElementById('code');if(!f.value.trim()){f.focus();return;}if(document.getElementById('compat-status').textContent==='Blocking'){alert('Pre-flight has not completed.');return;}alert('Prototype only: exam retrieval is not implemented yet.');});
 </script>
 </body></html>

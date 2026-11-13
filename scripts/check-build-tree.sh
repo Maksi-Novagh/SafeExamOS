@@ -25,6 +25,9 @@ build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-boot-marker
 build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-ci-ui-marker.service
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-ui-marker
 scripts/report-image-metrics.sh
+scripts/verify-framebuffer.py
+tests/launcher-smoke.cjs
+tests/preflight-smoke.sh
 scripts/report-runtime-metrics.sh
 scripts/collect-hardware-report.sh
 hardware/profiles/qemu-amd64.json
@@ -87,4 +90,16 @@ grep -Fq 'ExecStart=/usr/sbin/seatd -g video' "$SEAT_DROPIN"
 # Never launch Chromium or Cage as root or disable the browser sandbox.
 grep -Fq 'User=exam' "$SEAT_UNIT"
 
-echo "Build tree check: PASS"
+command -v node >/dev/null 2>&1 || {
+  echo "error: Node.js is required for automated launcher fixtures" >&2
+  exit 1
+}
+command -v python3 >/dev/null 2>&1 || {
+  echo "error: Python 3 is required for framebuffer verification" >&2
+  exit 1
+}
+node ./tests/launcher-smoke.cjs
+sh ./tests/preflight-smoke.sh
+python3 -m py_compile ./scripts/verify-framebuffer.py
+
+echo "Build tree check: PASS (including launcher and preflight fixtures)"

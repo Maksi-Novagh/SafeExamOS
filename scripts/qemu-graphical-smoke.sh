@@ -71,15 +71,36 @@ if ! grep -q 'SAFEEXAMOS_CI_UI_OK' "$LOG" 2>/dev/null; then
   exit 1
 fi
 
-printf 'screendump %s\n' "$PPM" | socat - "UNIX-CONNECT:$MON" >/dev/null
-sleep 1
-
-test -s "$PPM"
-header=$(head -n 3 "$PPM" | tr "\n" " ")
-printf '%s\n' "$header" | grep -Eq '^P6 [0-9]+ [0-9]+ 255 ' || {
-  echo "error: invalid PPM framebuffer header: $header" >&2
+# Wait for actual painted launcher pixels instead of only Chromium process startup.
+# CI runs QEMU without GPU acceleration, so allow several display frames to settle.
+ready=0
+frame_deadline=$(( $(date +%s) + 60 ))
+while [ "$(date +%s)" -lt "$frame_deadline" ]; do
+  printf 'screendump %s\n' "$PPM" | socat - "UNIX-CONNECT:$MON" >/dev/null || true
+  sleep 2
+  if test -s "$PPM" && python3 ./scripts/verify-framebuffer.py "$PPM"; then
+    ready=1
+    break
+  fi
+  sleep 2
+done
+if [ "$ready" -ne 1 ]; then
+  echo "error: Cage/Chromium processes started but launcher pixels are not visible" >&2
+  tail -n 100 "$LOG" >&2 || true
   exit 1
-}
+fi
+
+# Exercise the real QEMU input channel. Chromium focuses the typing-test field.
+# The second framebuffer must change visually after the key is delivered.
+PPM_TYPED=.ci/qemu-ui/safeexamos-after-input.ppm
+rm -f "$PPM_TYPED"
+printf 'sendkey a\n' | socat - "UNIX-CONNECT:$MON" >/dev/null
+sleep 3
+printf 'screendump %s\n' "$PPM_TYPED" | socat - "UNIX-CONNECT:$MON" >/dev/null
+sleep 1
+test -s "$PPM_TYPED"
+python3 ./scripts/verify-framebuffer.py "$PPM" --after-input "$PPM_TYPED"
 
 echo "Captured graphical framebuffer: $PPM"
+echo "Captured keyboard response framebuffer: $PPM_TYPED"
 echo "QEMU graphical smoke test: PASS"

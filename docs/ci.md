@@ -438,3 +438,12 @@ No browser sandbox, DRM permission broadening, or direct root execution of Cage 
 Run #41 had failed at the Cage DRM/VT seat boundary: `Could not get primary session for user` and `Could not open tty0`. Run #42 incorporates a dedicated `seatd` broker for the unprivileged `exam` user and passes the graphical smoke.
 
 **Scope:** the CI boots kernel/initrd directly from the generated ISO, with that ISO attached as the live medium. A green run verifies process startup and a valid PPM capture. It does **not** prove pixel-accurate UI, real keyboard/pointer events, UEFI bootloader handoff, persistent-state erasure, shortcut security, full SEB interoperability, or Lenovo hardware compatibility.
+
+
+### 2026-11-13 — autonomous UI and pre-flight regression checks
+
+The developer requested no manual test steps. The existing static build-tree check now executes `tests/launcher-smoke.cjs` and `tests/preflight-smoke.sh`. The first runs the launcher controller in a minimal deterministic DOM fixture and asserts the `Supported`, `Warning`, and fail-closed `Blocking` states, keyboard feedback, simulated exam-code gating, and asynchronous pre-flight refresh. The second simulates a stalled NetworkManager command and checks that the collector completes within a bounded time, generates valid JavaScript, and retains an explicitly blocking static fallback until complete.
+
+The existing graphical QEMU harness now validates the **actual image pixels** for the launcher white panel, dark text and DodgerBlue accent; it waits for a painted screen rather than merely trusting running processes. It then sends a single benign key via QEMU monitor, captures a second screenshot, and requires a visible change. A deterministic keyboard-feedback indicator has been added to the launcher, with focus placed on the typing field. The test is intentionally modest: visual differences could have other causes and do not prove input security, keyboard-layout correctness or exam lockdown.
+
+New scripts: `scripts/verify-framebuffer.py`, `tests/launcher-smoke.cjs`, `tests/preflight-smoke.sh`. The existing GitHub Actions YAML remains unchanged. **These new checks are not marked validated until their first green CI run.**

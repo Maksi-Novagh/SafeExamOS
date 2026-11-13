@@ -12,8 +12,8 @@ The GUI and browser are running in QEMU. That is not evidence of safe interactiv
 
 - Preserve the run #42 artifact, SHA-256, serial diagnostics and framebuffer as the known-good reference.
 - Measure ISO/SquashFS size, installed package count, enabled services, boot-to-launcher time and memory use.
-- Make the QEMU graphical test assert visible launcher content, rather than just detecting processes and a valid PPM header.
-- Add deterministic collector/UI fixture tests, especially failure of NetworkManager and the fail-closed pre-flight state.
+- Make the QEMU graphical test assert visible launcher content, rather than just detecting processes and a valid PPM header (implementation added 2026-11-13; CI validation pending).
+- Add deterministic collector/UI fixture tests, especially failure of NetworkManager and the fail-closed pre-flight state (implementation added 2026-11-13; CI validation pending).
 - Avoid further aggressive dependency pruning until both reference environments are checked.
 
 **Done when:** evidence is reproducible, and boot/UI tests detect a blank or broken launcher.

@@ -100,3 +100,10 @@ The kiosk session installs a read-only-image-provided `preflight.js` with `colle
 ## Latest CI verification — 2026-11-13
 
 The four-job green [run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740) covers the asynchronous pre-flight graphical startup path. The CI still checks Cage/Chromium presence and framebuffer capture, not actual typing, displayed verdict correctness, or a full test fixture for NetworkManager failures. Those require separate automation and physical checks.
+
+
+## Automated regression fixtures (2026-11-13)
+
+`tests/preflight-smoke.sh` installs a fake `nmcli` executable that deliberately stalls and checks that the collector times out each query and still writes parseable JavaScript. `tests/launcher-smoke.cjs` separately verifies fail-closed defaults and the status transition after the runtime pre-flight file changes. Both are invoked by the existing static build-tree check.
+
+The launcher now places keyboard focus in the typing field and displays local feedback only after input arrives; this does not claim to validate physical keyboard layouts or prevent keyboard shortcuts.

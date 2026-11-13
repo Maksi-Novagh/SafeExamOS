@@ -28,6 +28,8 @@ Current verified milestones (latest full CI pass: [run #42, 2026-11-13](https://
 
 The repository remains documentation-first: implementation, tests and documentation are updated together.
 
+Autonomous regression work (2026-11-13, **CI verification pending**): QEMU visual launcher assertions plus a synthetic key event/screenshot comparison, and deterministic pre-flight/launcher fixtures. These checks do not replace real-hardware certification or proof of exam security.
+
 Pre-flight UI includes a typing-test field and a local `Supported / Warning / Blocking` prototype verdict. The graphical CI does **not** exercise keyboard interaction, inspect the UI contents, or certify verdict correctness. Interactive Wi-Fi joining and system-level keyboard-layout switching remain pending.
 
 The original **2026-11-04** reference-acceptance deadline has passed without full completion. Run #42 verifies QEMU graphical **smoke**, not UEFI bootloader handoff, live keyboard input, clean state destruction or Lenovo hardware. See the [historical release-target checklist](docs/release-target-2026-11-04.md) and the [next validation plan](docs/next-steps.md).
