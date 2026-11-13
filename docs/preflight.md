@@ -107,3 +107,12 @@ The four-job green [run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/
 `tests/preflight-smoke.sh` installs a fake `nmcli` executable that deliberately stalls and checks that the collector times out each query and still writes parseable JavaScript. `tests/launcher-smoke.cjs` separately verifies fail-closed defaults and the status transition after the runtime pre-flight file changes. Both are invoked by the existing static build-tree check.
 
 The launcher now places keyboard focus in the typing field and displays local feedback only after input arrives; this does not claim to validate physical keyboard layouts or prevent keyboard shortcuts.
+
+
+## Network updates and initial focus (2026-11-13)
+
+The launcher no longer stops refreshing `preflight.js` as soon as the first collector returns `ok`. The unprivileged session refreshes its read-only hardware/network inventory every 15 seconds with individual and overall probe deadlines. The browser reloads the local snapshot on an 8-second cadence, including after successful inventory, so a late DHCP lease or route change is reflected without exposing a privileged API. A collector failure replaces the previous snapshot atomically with a **degraded/Blocking** baseline; it never leaves stale `Supported` as a presumed green state.
+
+The keyboard field is focused with `preventScroll: true`, without the HTML `autofocus` attribute. This keeps the top of the launcher visible on short VMware guest displays while preserving the QEMU keyboard-input smoke test.
+
+The VMware screenshot with `ens33`, `connecting` and no default route only establishes that DHCP had not provided a route **at scan time**. It does not prove Internet access is available or that SafeExamOS can fix an external DHCP/VMware NAT problem. The UI now says `Connecting (DHCP)` in that case and updates when the state changes. The network remains a warning until a default route exists.

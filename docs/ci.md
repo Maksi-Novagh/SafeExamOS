@@ -463,3 +463,10 @@ Remediation submitted to the next CI run:
 - retain the framebuffer color checks and keyboard screenshot comparison as **release-blocking** tests, rather than weakening them to obtain green CI.
 
 This is a baseline software-renderer choice for the current prototype, **not** an assertion that it is optimal on the Lenovo or that GPU acceleration is supported. A new full CI pass remains required.
+
+
+### 2026-11-13 — live network refresh and focus handling (implementation; CI pending)
+
+A physical VMware screenshot shows the launcher rendering, with a detected `ens33` NIC but NetworkManager still `connecting` and no default route. Pre-flight was previously a one-time snapshot: the browser polling logic stopped after the first successful inventory, so a delayed DHCP route would not be reflected. The session now refreshes bounded inventory every 15 seconds, and the launcher polls the local snapshot every 8 seconds without stopping on success. Failed refreshes revert atomically to an explicit blocking baseline. The typing field uses `focus({preventScroll:true})` to avoid hiding the launcher header on smaller displays.
+
+The launcher unit fixtures now assert a live transition from an online Supported state to an offline/connecting Warning state and check that a next poll remains scheduled. This does not guarantee VMware NAT/DHCP is configured correctly, and it does not grant network access in a locked exam.

@@ -74,4 +74,17 @@ assert.ok(async.timers.length>0,'missing preflight refresh timer');
 async.timers.shift()();
 assert.equal(async.get('compat-status').textContent,'Supported');
 
+// Even after the first successful inventory, a lost route must become visible.
+const changed=boot(state({}),state({network:{
+  state:'offline',managerState:'connecting',interfaces:'lo,ens33',wifiInterfaces:'none'
+}}));
+assert.equal(changed.get('compat-status').textContent,'Supported');
+changed.timers.shift()();
+assert.equal(changed.get('compat-status').textContent,'Warning');
+assert.match(changed.get('network-detail').textContent,/Connecting \(DHCP\)/);
+assert.ok(changed.timers.length>0,'network refresh stopped after successful preflight');
+assert.match(html,/focus\(\{preventScroll:true\}\)/);
+assert.doesNotMatch(html,/id="typing-test"[^>]*autofocus/);
+
+
 console.log('Launcher fixtures PASS: ready, warning, blocking, keyboard, exam-code guard, refresh');

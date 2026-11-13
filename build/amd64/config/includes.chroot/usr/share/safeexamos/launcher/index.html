@@ -24,7 +24,7 @@
 </section>
 <section class="panel">
 <h2>Keyboard</h2>
-<div class="row"><label for="typing-test">Typing test</label><input id="typing-test" placeholder="Type here to verify your keyboard" autofocus></div>
+<div class="row"><label for="typing-test">Typing test</label><input id="typing-test" placeholder="Type here to verify your keyboard"></div>
 <div class="keyboard-status" id="keyboard-typing-feedback" role="status" aria-live="polite">No keyboard input detected yet</div>
 </section>
 <section class="panel">
@@ -60,7 +60,7 @@ function renderPreflight(){
   if(!p){document.getElementById('overall-status').textContent='Pre-flight unavailable';document.getElementById('overall-status').className='status bad';return}
   const online=p.network&&p.network.state==='online';
   setIndicator('network-indicator',online?'ok':'warn');
-  document.getElementById('network-detail').textContent=(online?'Connected · ':'No default route · ')+(p.network.managerState||'unknown');
+  document.getElementById('network-detail').textContent=(online?'Connected · ':p.network.managerState==='connecting'?'Connecting (DHCP) · ':'No default route · ')+(p.network.managerState||'unknown');
   setIndicator('keyboard-indicator',p.keyboard&&p.keyboard.layout?'ok':'warn');
   const typing=document.getElementById('typing-test');
   const typed=typing.value.length>0;
@@ -103,22 +103,23 @@ function renderPreflight(){
 renderPreflight();
 (function pollPreflight(){
   let attempts=0;
-  function retry(){
-    if(window.SAFEEXAMOS_PREFLIGHT && window.SAFEEXAMOS_PREFLIGHT.collectorStatus==='ok') return;
-    if(attempts++>=15) return;
+  // A successful hardware scan is only a snapshot. DHCP, Wi-Fi and
+  // link state may change after the first pre-flight has completed.
+  function refresh(){
     const script=document.createElement('script');
-    script.src='preflight.js?check='+attempts;
-    script.onload=function(){
-      renderPreflight();
-      if(window.SAFEEXAMOS_PREFLIGHT.collectorStatus!=='ok') setTimeout(retry,1500);
+    script.src='preflight.js?check='+(++attempts);
+    const next=function(){
+      if(script.parentNode)script.parentNode.removeChild(script);
+      setTimeout(refresh,8000);
     };
-    script.onerror=function(){setTimeout(retry,1500);};
+    script.onload=function(){renderPreflight();next();};
+    script.onerror=next;
     document.head.appendChild(script);
   }
-  setTimeout(retry,1500);
+  setTimeout(refresh,8000);
 })();
 document.getElementById('typing-test').addEventListener('input',renderPreflight);
-document.getElementById('typing-test').focus();
+document.getElementById('typing-test').focus({preventScroll:true});
 document.getElementById('continue').addEventListener('click',function(){var f=document.getElementById('code');if(!f.value.trim()){f.focus();return;}if(document.getElementById('compat-status').textContent==='Blocking'){alert('Pre-flight has not completed.');return;}alert('Prototype only: exam retrieval is not implemented yet.');});
 </script>
 </body></html>

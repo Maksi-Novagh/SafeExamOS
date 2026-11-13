@@ -18,11 +18,20 @@ cp /usr/share/safeexamos/launcher/index.html "$RUNTIME_LAUNCHER/index.html"
 cp /usr/share/safeexamos/launcher/preflight.js "$RUNTIME_LAUNCHER/preflight.js"
 echo "SAFEEXAMOS_PREFLIGHT_ASYNC_START"
 (
-  if timeout -k 2s 14s /usr/local/sbin/safeexamos-preflight "$RUNTIME_LAUNCHER"; then
-    echo "SAFEEXAMOS_PREFLIGHT_OK"
-  else
-    echo "SAFEEXAMOS_PREFLIGHT_DEGRADED" >&2
-  fi
+  # Keep the snapshot current when DHCP finishes or the network changes.
+  # Collection is bounded; on failure publish a fail-closed fallback.
+  while :; do
+    if timeout -k 2s 14s /usr/local/sbin/safeexamos-preflight "$RUNTIME_LAUNCHER"; then
+      echo "SAFEEXAMOS_PREFLIGHT_OK"
+    else
+      echo "SAFEEXAMOS_PREFLIGHT_DEGRADED" >&2
+      degraded=$(mktemp "$RUNTIME_LAUNCHER/.preflight-degraded.XXXXXX")
+      cp /usr/share/safeexamos/launcher/preflight.js "$degraded"
+      chmod 0644 "$degraded"
+      mv -f "$degraded" "$RUNTIME_LAUNCHER/preflight.js"
+    fi
+    sleep 15
+  done
 ) &
 LAUNCHER="file://$RUNTIME_LAUNCHER/index.html"
 echo "SAFEEXAMOS_CAGE_START"

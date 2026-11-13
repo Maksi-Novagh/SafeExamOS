@@ -62,3 +62,8 @@ The GUI and browser are running in QEMU. That is not evidence of safe interactiv
 Virtualization detection remains deferred, as previously requested; QEMU is a valid laboratory reference. ARM images, production proctoring, commercial deployment and certification remain outside this immediate validation cycle.
 
 **Recommendation:** start with Priority 0's framebuffer/UI assertions and input validation, then proceed to the physical Lenovo test. These provide far more useful confidence than implementing the full threat catalog before confirming the basic user interactions.
+
+
+## User-visible VMware feedback (2026-11-13)
+
+An actual VMware Workstation boot shows the pre-flight launcher, VMware SVGA II display, six input devices, and an ephemeral live session. The NIC `ens33` exists, but no default route is established at the timestamp shown; a later DHCP result was not automatically refreshed by the previous UI. Refresh support and non-scrolling input focus have been implemented for subsequent CI verification. The next engineering gate remains reliable network setup and a local, explicitly non-production demonstration exam. Hardware model certification and virtualization detection remain deferred.
