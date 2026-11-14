@@ -26,6 +26,8 @@ Current verified milestones (latest full CI pass: [run #42, 2026-11-13](https://
 - asynchronous hardware/network pre-flight with a fail-closed initial snapshot;
 - framebuffer evidence captured by CI.
 
+The November 14 security baseline adds a **read-only `.seb` format inspector** and stricter Chromium managed policies (DevTools and ordinary external navigation blocked by default). These are partial defensive controls, **not SEB compatibility or full shortcut lockdown**. `Ctrl+T` and other browser/native shortcuts remain an explicitly open release blocker until live tests confirm command interception. See [SEB inspection and browser policy](docs/seb-inspection-and-browser-policy.md).
+
 The repository remains documentation-first: implementation, tests and documentation are updated together.
 
 Autonomous regression work (2026-11-13): deterministic pre-flight/launcher fixtures passed in run #45, but the stronger QEMU visual assertion exposed a black frame and Cage EGL crash. A software-renderer correction is pending CI validation; no visible-UI success is claimed yet. These checks do not replace real-hardware certification or proof of exam security.

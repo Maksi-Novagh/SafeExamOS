@@ -148,3 +148,8 @@ Do not use production exams for compatibility testing.
   https://github.com/SafeExamBrowser/seb-win-refactoring/blob/master/SafeExamBrowser.Browser/Handlers/ResourceHandler.cs
 - Windows configuration keys:
   https://github.com/SafeExamBrowser/seb-win-refactoring/blob/master/SafeExamBrowser.Configuration/ConfigurationData/Keys.cs
+
+
+## 2026-11-14 — L0 read-only inspection milestone
+
+The repository now includes `scripts/inspect-seb.py`, a limited `.seb` format inspector for the official outer gzip / `plnd` / inner gzip XML-plist form. It recognizes key names without exposing values. Encrypted configurations and unknown formats are explicitly rejected; the inspector does not apply settings or launch an exam. See [the implementation notes](seb-inspection-and-browser-policy.md). Do not count this as L1/real exam support.

@@ -74,3 +74,8 @@ An actual VMware Workstation boot shows the pre-flight launcher, VMware SVGA II 
 The first *local-only* exam path is implemented as a separate `demo.html` and `demo-exam.js`, accessed by entering **DEMO** in the existing launcher after its current pre-flight is not Blocking. It contains four fictional multiple-choice questions, previous/next navigation, an answered count, review including unanswered questions, explicit local submission and a confirmation screen. The demo does not fetch an exam, use a server, grade a student or persist a result. Responses are kept in volatile JS memory and cleared on submission. Leaving the demo discards the page's ephemeral state. The standard exam-code flow remains intentionally unsupported. The demo is a UI and state-transition exercise, **not** an exam-security guarantee.
 
 The existing build-tree check now runs `tests/demo-exam-smoke.cjs` alongside the launcher/pre-flight fixtures. Further evidence required: real Chromium/QEMU interaction with the demo screen, session crash/recovery/teardown and UEFI/physical boot. The original SEB integration and shortcut lockdown remain separate milestones. No new GitHub workflow is added.
+
+
+## Security finding (2026-11-14)
+
+The user observed browser shortcuts (`Ctrl+T`, `Ctrl+Shift+I`) still functioning in SafeExamOS. Blocking them is a **release-critical defect**, not a cosmetic limitation. The first mitigation adds managed Chromium policies and an L0 `.seb` inspector with fail-closed handling, but real command interception and runtime verification are not complete. See [SEB inspection and browser policy](seb-inspection-and-browser-policy.md). Do not attempt real examinations yet.

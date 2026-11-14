@@ -475,3 +475,8 @@ The launcher unit fixtures now assert a live transition from an online Supported
 ### 2026-11-14 — offline demonstration exam (implementation, CI pending)
 
 Added local-only `demo.html` and dependency-free `demo-exam.js`. The launcher accepts the single reserved demonstration code `DEMO` and navigates to a fixed local file only when the existing pre-flight has no blocking verdict. Arbitrary/institutional codes remain unsupported; none are used to construct URLs. The demo implements four fictional questions, navigation, answered-progress, review, confirmation and local submission with in-memory answer cleanup. It has no HTTP requests, analytics, exam grading, durable answer storage or SEB interoperability claims. Separate automated Node tests cover state transitions, invalid choices, result clearing, UI navigation and discard. The existing static checks execute the tests. No Actions workflow YAML change was made.
+
+
+### 2026-11-14 — SEB inspection and Chromium policy baseline (awaiting CI)
+
+`tests/inspect-seb-smoke.py` covers gzip/plnd/gzip plist, encrypted format rejection, malformed input, and maximum size. `scripts/check-chromium-policy.py` validates the expected managed Chromium policy keys, including disabled DevTools, printing, downloads, popups, extensions and a default HTTP/HTTPS navigation block. Existing Actions YAML is unchanged. A green static check does not demonstrate that Chromium actually blocks `Ctrl+T` or that the resulting client is SEB-compatible; this must be verified with live input tests.

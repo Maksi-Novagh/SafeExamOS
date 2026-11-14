@@ -6,5 +6,21 @@
   "EditBookmarksEnabled": false,
   "AllowFileSelectionDialogs": false,
   "ExternalProtocolDialogShowAlwaysOpenCheckbox": false,
-  "ProfilePickerOnStartupAvailability": 1
+  "ProfilePickerOnStartupAvailability": 1,
+  "DeveloperToolsAvailability": 2,
+  "DefaultPopupsSetting": 2,
+  "PrintingEnabled": false,
+  "IncognitoModeAvailability": 1,
+  "ExtensionInstallBlocklist": [
+    "*"
+  ],
+  "SpellcheckEnabled": false,
+  "TranslateEnabled": false,
+  "DownloadRestrictions": 3,
+  "URLBlocklist": [
+    "http://*",
+    "https://*",
+    "view-source:*",
+    "devtools:*"
+  ]
 }

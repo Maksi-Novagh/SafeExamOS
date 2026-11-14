@@ -26,6 +26,9 @@ build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-ci-ui-marker.se
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-ui-marker
 scripts/report-image-metrics.sh
 scripts/verify-framebuffer.py
+scripts/inspect-seb.py
+scripts/check-chromium-policy.py
+tests/inspect-seb-smoke.py
 tests/launcher-smoke.cjs
 tests/demo-exam-smoke.cjs
 build/amd64/config/includes.chroot/usr/share/safeexamos/launcher/demo.html
@@ -106,6 +109,8 @@ command -v python3 >/dev/null 2>&1 || {
 }
 node ./tests/launcher-smoke.cjs
 node ./tests/demo-exam-smoke.cjs
+python3 ./tests/inspect-seb-smoke.py
+python3 ./scripts/check-chromium-policy.py
 sh ./tests/preflight-smoke.sh
 python3 -m py_compile ./scripts/verify-framebuffer.py
 
