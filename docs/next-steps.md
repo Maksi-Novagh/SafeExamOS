@@ -86,3 +86,8 @@ The user observed browser shortcuts (`Ctrl+T`, `Ctrl+Shift+I`) still functioning
 A new administrator-generated portal catalog can offer Smartschool and explicitly approved fixed-URL exam platforms. The launcher accepts a canonical Smartschool school slug or hostname and opens its HTTPS login page. Chromium keeps its default HTTP/HTTPS blocklist with only configured portal and known identity-provider exceptions. This is a **pre-exam browsing mode**, NOT a secure examination session: pop-ups and authentication redirects may be needed, and browser shortcuts such as Ctrl+T are still unresolved. External providers may need additional allowed hosts, cookies, OAuth/SSO behavior, popup handling or uploads; these have not been validated against real Smartschool accounts. See [school portal integration](school-portals.md).
 
 Next acceptance steps: QEMU/VMware live login tests with institution consent; exact redirect/domain mapping and third-party-cookie evaluation; properly scoped exam mode with a separate browser policy/profile and verified shortcut containment. Never enter real exam credentials into CI fixtures.
+
+
+## 2026-11-15 — mode-separated browser prototype
+
+The launcher-to-DEMO transition now replaces the browser process and its temporary profile rather than navigating within the same Chromium profile. A loopback-only supervisor authorizes the transition and serves different local page sets by phase. This is a **data isolation milestone only**: the system-wide Chromium URL exceptions are still shared, and the compositor/shortcut controls remain unverified. See [browser mode supervisor](browser-mode-supervisor.md).

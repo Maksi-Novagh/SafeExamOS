@@ -485,3 +485,8 @@ Added local-only `demo.html` and dependency-free `demo-exam.js`. The launcher ac
 ### 2026-11-14 — managed school-portal catalog (implementation; CI pending)
 
 The launcher now includes a restricted pre-exam portal selector. `config/portals.json` is the administrator-owned source for supported platforms. `scripts/render-portals.py` generates both the browser-facing portal catalog and Chromium managed URL/popup exceptions. The existing static job validates their exact consistency with `--check`, rejects unrecognized/unsafe portal URLs and runs `tests/portal-policy-smoke.py` plus `tests/portal-browser-smoke.cjs`. The test data contains no passwords or login tokens. The CI does not log in to Smartschool and cannot certify arbitrary exam-provider behavior. The existing workflow YAML is unchanged.
+
+
+### 2026-11-15 — isolated portal/demo supervisor (implementation, CI pending)
+
+The kiosk now invokes an unprivileged local browser-mode supervisor from Cage. It serves the launcher on loopback and uses an explicit local token-authenticated mode transition to switch between separate ephemeral portal/demo Chromium profiles. Static fixture tests check restricted file serving, token rotation, same-origin requests and separate command-line profile directories. The existing four-job workflow is unchanged. A passing static fixture alone cannot establish a secure lockdown, live Chromium transition, or differentiated browser policies.

@@ -198,7 +198,9 @@
     }
 
     function returnToLauncher() {
-      host.location.replace('index.html');
+      host.SafeExamTransition.request('finish-demo').catch(() => {
+        get('demo-phase').textContent = 'Session exit failed';
+      });
     }
 
     prev.addEventListener('click', () => { model.move(-1); render(); });

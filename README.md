@@ -170,3 +170,6 @@ Key upstream observations:
 No project-wide license has been selected yet. Do not assume that repository contents may be redistributed under a particular license until a LICENSE file is added.
 
 Upstream SEB repositories have their own licenses (many use MPL-2.0). SafeExamOS must respect those licenses and avoid copying upstream code without preserving the required notices and obligations.
+
+
+The November 15 mode-supervisor prototype separates the school portal browser and offline DEMO into sequential Chromium processes with different temporary profiles and token-authorized local transitions. **This is not yet a secure exam mode** because system browser policies are still shared and keyboard commands remain a release blocker. [Technical details](docs/browser-mode-supervisor.md).

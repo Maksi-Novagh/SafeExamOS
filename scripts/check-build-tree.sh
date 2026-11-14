@@ -34,6 +34,9 @@ build/amd64/config/includes.chroot/usr/share/safeexamos/launcher/portals.js
 build/amd64/config/includes.chroot/usr/share/safeexamos/launcher/portal-browser.js
 tests/portal-policy-smoke.py
 tests/portal-browser-smoke.cjs
+tests/session-supervisor-smoke.py
+build/amd64/config/includes.chroot/usr/local/bin/safeexamos-browser-supervisor
+build/amd64/config/includes.chroot/usr/share/safeexamos/launcher/transition.js
 tests/inspect-seb-smoke.py
 tests/launcher-smoke.cjs
 tests/demo-exam-smoke.cjs
@@ -59,7 +62,7 @@ done
 PKGS=build/amd64/config/package-lists/safeexamos.list.chroot
 SESSION=build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session
 
-for pkg in cage chromium network-manager user-setup seatd libseat1; do
+for pkg in cage chromium network-manager user-setup seatd libseat1 python3; do
   grep -Eq "^$pkg$" "$PKGS" || {
     echo "error: required runtime package missing: $pkg" >&2
     exit 1
@@ -76,8 +79,13 @@ if grep -Eq 'chromium .*--no-sandbox' "$SESSION"; then
   exit 1
 fi
 
-grep -Fq -- '--app="$LAUNCHER"' "$SESSION" || {
-  echo "error: Chromium must launch the exam surface in app mode" >&2
+SUPERVISOR=build/amd64/config/includes.chroot/usr/local/bin/safeexamos-browser-supervisor
+grep -Fq -- 'exec cage -d -- /usr/local/bin/safeexamos-browser-supervisor' "$SESSION" || {
+  echo "error: Cage must start the dedicated session supervisor" >&2
+  exit 1
+}
+grep -Fq -- 'f"--app={ORIGIN}/launcher/{page}"' "$SUPERVISOR" || {
+  echo "error: supervised Chromium must launch in app mode" >&2
   exit 1
 }
 
@@ -120,6 +128,7 @@ python3 ./scripts/check-chromium-policy.py
 python3 ./scripts/render-portals.py --check
 python3 ./tests/portal-policy-smoke.py
 node ./tests/portal-browser-smoke.cjs
+python3 ./tests/session-supervisor-smoke.py
 sh ./tests/preflight-smoke.sh
 python3 -m py_compile ./scripts/verify-framebuffer.py
 

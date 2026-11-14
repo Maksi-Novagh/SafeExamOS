@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="safeexamos-transition-token" content="__SAFEEXAMOS_TRANSITION_TOKEN__">
 <title>SafeExamOS</title>
 <style>
 :root{font-family:"Segoe UI","Noto Sans","Liberation Sans",sans-serif;color:#000;background:#f0f0f0;--accent:dodgerblue;--hover:lightblue;--muted:dimgray;--ok:#2f7d32;--warn:#8a6d3b;--bad:#a94442}
@@ -10,6 +11,7 @@
 </style>
 <script src="preflight.js"></script>
 <script src="portals.js"></script>
+<script src="transition.js"></script>
 </head>
 <body>
 <main>
@@ -143,7 +145,9 @@ document.getElementById('continue').addEventListener('click',function(){
     return;
   }
   // Navigate only to an image-shipped local file, never to a code-derived URL.
-  window.location.assign('demo.html');
+  window.SafeExamTransition.request('start-demo').catch(function(){
+    alert('Could not start the isolated demonstration session.');
+  });
 });
 </script>
 <script src="portal-browser.js"></script>

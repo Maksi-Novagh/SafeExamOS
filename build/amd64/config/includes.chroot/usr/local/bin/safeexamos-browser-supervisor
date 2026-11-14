@@ -1,0 +1,261 @@
+#!/usr/bin/env python3
+"""SafeExamOS local portal/demo supervisor (prototype, not SEB lockdown).
+
+Only two modes exist: pre-exam portal and offline demonstration.
+A loopback-only local UI and an authenticated state transition ensure that
+portal and demonstration Chromium profiles never run at the same time.
+
+The global managed Chromium policy is still shared across both modes.
+Therefore this is session-data separation, NOT an exam security boundary.
+"""
+from __future__ import annotations
+
+import hmac
+import http.server
+import json
+import os
+import secrets
+import shutil
+import signal
+import subprocess
+import sys
+import threading
+import time
+from pathlib import Path
+from urllib.parse import urlsplit
+
+HOST = "127.0.0.1"
+PORT = 38652
+ORIGIN = f"http://{HOST}:{PORT}"
+SUPPORTED_MODES = {"portal", "demo"}
+ALLOWED = {
+    "portal": frozenset({"index.html", "preflight.js", "portals.js",
+                         "portal-browser.js", "transition.js"}),
+    "demo": frozenset({"demo.html", "demo-exam.js", "transition.js"}),
+}
+CONTENT_TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8"}
+
+class TransitionError(ValueError):
+    pass
+
+class Controller:
+    def __init__(self):
+        self.mode = "portal"
+        self.pending = None
+        self.token = secrets.token_urlsafe(32)
+        self.lock = threading.Lock()
+
+    def request(self, action: str, supplied_token: str) -> None:
+        if not isinstance(supplied_token, str) or len(supplied_token) > 128:
+            raise TransitionError("Missing or invalid transition token")
+        with self.lock:
+            if not hmac.compare_digest(self.token, supplied_token):
+                raise TransitionError("Incorrect transition token")
+            expected = {"portal": ("start-demo", "demo"),
+                        "demo": ("finish-demo", "portal")}[self.mode]
+            if self.pending is not None or action != expected[0]:
+                raise TransitionError("Invalid session transition")
+            self.pending = expected[1]
+
+    def consume_pending(self) -> str | None:
+        with self.lock:
+            return self.pending
+
+    def complete(self, target: str) -> None:
+        if target not in SUPPORTED_MODES:
+            raise TransitionError("Unknown session mode")
+        with self.lock:
+            if target != self.pending:
+                raise TransitionError("Unexpected session mode change")
+            self.mode = target
+            self.pending = None
+            self.token = secrets.token_urlsafe(32)
+
+class LocalAppServer(http.server.ThreadingHTTPServer):
+    allow_reuse_address = True
+    daemon_threads = True
+
+    def __init__(self, address, app_directory: Path, controller: Controller):
+        super().__init__(address, AppHandler)
+        self.app_directory = app_directory
+        self.controller = controller
+
+class AppHandler(http.server.BaseHTTPRequestHandler):
+    server: LocalAppServer
+    def log_message(self, fmt, *args):
+        # Never log credentials or query strings. Only the request path/status.
+        return
+
+    def _reject(self, code: int):
+        self.send_response(code)
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    def _allowed_host(self):
+        return self.headers.get("Host") == f"{HOST}:{PORT}"
+
+    def _send(self, data: bytes, content_type: str, status: int = 200):
+        self.send_response(status)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("Cross-Origin-Resource-Policy", "same-origin")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header(
+            "Content-Security-Policy",
+            "default-src 'self'; script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; connect-src 'self'; "
+            "img-src 'self' data:; object-src 'none'; base-uri 'none'; "
+            "form-action 'none'; frame-ancestors 'none'"
+        )
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    def do_GET(self):
+        if not self._allowed_host():
+            return self._reject(403)
+        url = urlsplit(self.path)
+        if url.query or url.fragment:
+            # Preflight refreshes use a local cache-buster and no other query.
+            if not (url.path == "/launcher/preflight.js"
+                    and url.query.startswith("check=")
+                    and url.query[6:].isdigit()
+                    and len(url.query) <= 32):
+                return self._reject(400)
+        if url.path == "/favicon.ico":
+            return self._reject(404)
+        if url.path == "/api/status":
+            data = json.dumps({"mode": self.server.controller.mode},
+                              separators=(",", ":")).encode("utf-8")
+            return self._send(data, "application/json; charset=utf-8")
+        if not url.path.startswith("/launcher/"):
+            return self._reject(404)
+        name = url.path.removeprefix("/launcher/")
+        if name not in ALLOWED[self.server.controller.mode]:
+            return self._reject(404)
+        # Names are a fixed whitelist, not a path supplied by the browser.
+        file = self.server.app_directory / name
+        try:
+            data = file.read_bytes()
+        except OSError:
+            return self._reject(503)
+        if name in ("index.html", "demo.html"):
+            data = data.replace(
+                b"__SAFEEXAMOS_TRANSITION_TOKEN__",
+                self.server.controller.token.encode("ascii")
+            )
+        return self._send(data, CONTENT_TYPES[file.suffix])
+
+    def do_POST(self):
+        if not self._allowed_host() or self.path != "/api/transition":
+            return self._reject(404)
+        if self.headers.get("Origin") != ORIGIN:
+            return self._reject(403)
+        if self.headers.get("Content-Type") != "application/json":
+            return self._reject(415)
+        try:
+            size = int(self.headers.get("Content-Length", "-1"))
+        except ValueError:
+            return self._reject(400)
+        if size < 1 or size > 128:
+            return self._reject(413)
+        try:
+            payload = json.loads(self.rfile.read(size))
+        except (UnicodeDecodeError, ValueError):
+            return self._reject(400)
+        if not isinstance(payload, dict) or set(payload) != {"action"}:
+            return self._reject(400)
+        try:
+            self.server.controller.request(
+                payload["action"], self.headers.get("X-SafeExamOS-Token", "")
+            )
+        except (TransitionError, TypeError, KeyError):
+            return self._reject(409)
+        self._send(b'{"accepted":true}', "application/json; charset=utf-8", 202)
+
+    def do_OPTIONS(self):
+        # Do not grant cross-origin API access to school websites.
+        self._reject(403)
+
+def browser_arguments(mode: str, runtime: Path, browser: str = "/usr/bin/chromium") -> list[str]:
+    if mode not in SUPPORTED_MODES:
+        raise ValueError("Unrecognized browser mode")
+    page = "index.html" if mode == "portal" else "demo.html"
+    profile = runtime / "profiles" / mode
+    return [
+        browser,
+        f"--app={ORIGIN}/launcher/{page}",
+        "--start-fullscreen",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--disable-session-crashed-bubble",
+        "--disable-infobars",
+        "--disable-translate",
+        "--disable-features=Translate",
+        f"--user-data-dir={profile}",
+    ]
+
+def dispose_browser(process: subprocess.Popen, profile: Path):
+    # Chromium launches helpers in the same dedicated process group.
+    if process.poll() is None:
+        os.killpg(process.pid, signal.SIGTERM)
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            os.killpg(process.pid, signal.SIGKILL)
+            process.wait(timeout=5)
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    if profile.is_dir():
+        shutil.rmtree(profile)
+
+def run() -> int:
+    runtime = Path(os.environ["XDG_RUNTIME_DIR"])
+    app = runtime / "launcher"
+    if not app.is_dir() or not (app / "index.html").is_file():
+        raise RuntimeError("Missing SafeExamOS runtime launcher")
+    profiles = runtime / "profiles"
+    profiles.mkdir(mode=0o700, exist_ok=True)
+    for name in SUPPORTED_MODES:
+        shutil.rmtree(profiles / name, ignore_errors=True)
+    controller = Controller()
+    server = LocalAppServer((HOST, PORT), app, controller)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    process = None
+    try:
+        while True:
+            mode = controller.mode
+            profile = profiles / mode
+            profile.mkdir(mode=0o700)
+            cmd = browser_arguments(mode, runtime)
+            print("SAFEEXAMOS_BROWSER_MODE=" + mode, flush=True)
+            process = subprocess.Popen(cmd, start_new_session=True)
+            while process.poll() is None and controller.consume_pending() is None:
+                time.sleep(0.15)
+            target = controller.consume_pending()
+            dispose_browser(process, profile)
+            process = None
+            if target is None:
+                raise RuntimeError("Chromium exited unexpectedly in mode " + mode)
+            controller.complete(target)
+            print(f"SAFEEXAMOS_BROWSER_TRANSITION={mode}-to-{target}", flush=True)
+    finally:
+        if process is not None:
+            dispose_browser(process, profiles / controller.mode)
+        server.shutdown()
+        server.server_close()
+        shutil.rmtree(profiles, ignore_errors=True)
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(run())
+    except (OSError, RuntimeError, ValueError) as error:
+        print("SAFEEXAMOS_BROWSER_ERROR: " + str(error), file=sys.stderr)
+        raise SystemExit(1)

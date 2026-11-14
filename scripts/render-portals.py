@@ -93,7 +93,7 @@ def build_outputs(config: dict, current_policy: dict) -> tuple[str, str]:
         pattern in policy["URLBlocklist"] for pattern in ("http://*", "https://*")
     ):
         raise ValueError("No default-deny HTTP(S) blocklist found")
-    policy["URLAllowlist"] = allowed
+    policy["URLAllowlist"] = sorted(set(allowed) | {"http://127.0.0.1:38652"})
     # Authentication pages may rely on popup dialogs. This is only a pre-exam
     # portal allowance; it must not be inherited as a secure exam policy.
     policy["PopupsAllowedForUrls"] = allowed

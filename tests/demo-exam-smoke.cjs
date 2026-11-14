@@ -75,7 +75,7 @@ function fakeDOM() {
 }
 const doc = fakeDOM();
 const redirects = [];
-const host = {location: {replace(target) { redirects.push(target); }}};
+const host = {SafeExamTransition: {request(action) { redirects.push(action); return Promise.resolve(true); }}};
 const uiSession = demo.mount(doc, host);
 const get = id => doc.getElementById(id);
 assert.equal(get('demo-question-number').textContent, 'Question 1 of 4');
@@ -101,12 +101,12 @@ assert.equal(get('receipt-panel').hidden, false);
 assert.match(get('demo-receipt-text').textContent, /No answers were uploaded/);
 assert.equal(uiSession.summary().answered, 1);
 get('demo-done').click();
-assert.deepEqual(redirects, ['index.html']);
+assert.deepEqual(redirects, ['finish-demo']);
 
-const discardDoc = fakeDOM(), discardHost = {location: {replace(target) { redirects.push(target); }}};
+const discardDoc = fakeDOM(), discardHost = {SafeExamTransition: {request(action) { redirects.push(action); return Promise.resolve(true); }}};
 demo.mount(discardDoc, discardHost);
 discardDoc.getElementById('demo-exit').click();
 discardDoc.getElementById('demo-discard').click();
-assert.deepEqual(redirects, ['index.html', 'index.html']);
+assert.deepEqual(redirects, ['finish-demo', 'finish-demo']);
 
 console.log('Offline demo exam PASS: questions, navigation, review, submission, data clearing and exit');

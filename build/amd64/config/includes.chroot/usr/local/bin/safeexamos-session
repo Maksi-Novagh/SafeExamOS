@@ -20,6 +20,7 @@ cp /usr/share/safeexamos/launcher/demo-exam.js "$RUNTIME_LAUNCHER/demo-exam.js"
 cp /usr/share/safeexamos/launcher/preflight.js "$RUNTIME_LAUNCHER/preflight.js"
 cp /usr/share/safeexamos/launcher/portals.js "$RUNTIME_LAUNCHER/portals.js"
 cp /usr/share/safeexamos/launcher/portal-browser.js "$RUNTIME_LAUNCHER/portal-browser.js"
+cp /usr/share/safeexamos/launcher/transition.js "$RUNTIME_LAUNCHER/transition.js"
 echo "SAFEEXAMOS_PREFLIGHT_ASYNC_START"
 (
   # Keep the snapshot current when DHCP finishes or the network changes.
@@ -37,16 +38,7 @@ echo "SAFEEXAMOS_PREFLIGHT_ASYNC_START"
     sleep 15
   done
 ) &
-LAUNCHER="file://$RUNTIME_LAUNCHER/index.html"
 echo "SAFEEXAMOS_CAGE_START"
-
-exec cage -d -- chromium \
-  --app="$LAUNCHER" \
-  --start-fullscreen \
-  --no-first-run \
-  --no-default-browser-check \
-  --disable-session-crashed-bubble \
-  --disable-infobars \
-  --disable-translate \
-  --disable-features=Translate \
-  --user-data-dir="$XDG_RUNTIME_DIR/chromium"
+# Cage supervises the dedicated mode controller; only one Chromium child
+# and one ephemeral browser profile exist at a time.
+exec cage -d -- /usr/local/bin/safeexamos-browser-supervisor

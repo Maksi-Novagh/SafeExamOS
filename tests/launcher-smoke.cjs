@@ -29,7 +29,7 @@ function boot(data,nextData){
     return els.get(id);
   }
   const ctx={
-    window:{SAFEEXAMOS_PREFLIGHT:data,location:{assign(target){alerts.push('NAV:'+target);}}},
+    window:{SAFEEXAMOS_PREFLIGHT:data,SafeExamTransition:{request(action){alerts.push('TRANSITION:'+action);return {catch(){}};}}},
     alert(s){alerts.push(s);},
     document:{
       getElementById:get,
@@ -59,7 +59,7 @@ ok.get('continue').handlers.click();
 assert.match(ok.alerts[0],/enter DEMO/);
 ok.get('code').value='demo';
 ok.get('continue').handlers.click();
-assert.equal(ok.alerts[1],'NAV:demo.html');
+assert.equal(ok.alerts[1],'TRANSITION:start-demo');
 
 const blocked=boot(state({collectorStatus:'degraded',memoryMiB:0,inputDevices:0}));
 assert.equal(blocked.get('compat-status').textContent,'Blocking');

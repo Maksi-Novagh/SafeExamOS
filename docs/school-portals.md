@@ -31,3 +31,8 @@ Before production, the exam mode must be separate, with an authenticated exam co
 ## Testing and privacy
 
 The tests use synthetic school names and platform URLs only; no real passwords are collected or logged. Network connectivity is a precondition. Full compatibility must be validated against a real school and each supported exam provider with authorization. Refer to `tests/portal-policy-smoke.py` and `tests/portal-browser-smoke.cjs` for current deterministic coverage.
+
+
+## Data isolation between portal and demo (2026-11-15)
+
+A new supervisor opens the local launcher through a loopback-only HTTP origin, then closes the portal browser and removes its temporary profile before launching the offline DEMO in a distinct profile. The return path similarly disposes of the demo profile. This is not a production exam: the global managed URL policy still allows Smartschool/SSO sites in both phases, and real exam launch integration is unverified. See [mode supervisor](browser-mode-supervisor.md).

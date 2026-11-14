@@ -24,6 +24,7 @@
   "SpellcheckEnabled": false,
   "TranslateEnabled": false,
   "URLAllowlist": [
+    "http://127.0.0.1:38652",
     "https://accounts.google.com",
     "https://login.live.com",
     "https://login.microsoftonline.com",
