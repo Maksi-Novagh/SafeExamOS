@@ -28,6 +28,12 @@ scripts/report-image-metrics.sh
 scripts/verify-framebuffer.py
 scripts/inspect-seb.py
 scripts/check-chromium-policy.py
+scripts/render-portals.py
+config/portals.json
+build/amd64/config/includes.chroot/usr/share/safeexamos/launcher/portals.js
+build/amd64/config/includes.chroot/usr/share/safeexamos/launcher/portal-browser.js
+tests/portal-policy-smoke.py
+tests/portal-browser-smoke.cjs
 tests/inspect-seb-smoke.py
 tests/launcher-smoke.cjs
 tests/demo-exam-smoke.cjs
@@ -111,6 +117,9 @@ node ./tests/launcher-smoke.cjs
 node ./tests/demo-exam-smoke.cjs
 python3 ./tests/inspect-seb-smoke.py
 python3 ./scripts/check-chromium-policy.py
+python3 ./scripts/render-portals.py --check
+python3 ./tests/portal-policy-smoke.py
+node ./tests/portal-browser-smoke.cjs
 sh ./tests/preflight-smoke.sh
 python3 -m py_compile ./scripts/verify-framebuffer.py
 

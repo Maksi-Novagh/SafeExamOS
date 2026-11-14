@@ -79,3 +79,10 @@ The existing build-tree check now runs `tests/demo-exam-smoke.cjs` alongside the
 ## Security finding (2026-11-14)
 
 The user observed browser shortcuts (`Ctrl+T`, `Ctrl+Shift+I`) still functioning in SafeExamOS. Blocking them is a **release-critical defect**, not a cosmetic limitation. The first mitigation adds managed Chromium policies and an L0 `.seb` inspector with fail-closed handling, but real command interception and runtime verification are not complete. See [SEB inspection and browser policy](seb-inspection-and-browser-policy.md). Do not attempt real examinations yet.
+
+
+## Pre-exam school portal browser — 2026-11-14 (CI pending)
+
+A new administrator-generated portal catalog can offer Smartschool and explicitly approved fixed-URL exam platforms. The launcher accepts a canonical Smartschool school slug or hostname and opens its HTTPS login page. Chromium keeps its default HTTP/HTTPS blocklist with only configured portal and known identity-provider exceptions. This is a **pre-exam browsing mode**, NOT a secure examination session: pop-ups and authentication redirects may be needed, and browser shortcuts such as Ctrl+T are still unresolved. External providers may need additional allowed hosts, cookies, OAuth/SSO behavior, popup handling or uploads; these have not been validated against real Smartschool accounts. See [school portal integration](school-portals.md).
+
+Next acceptance steps: QEMU/VMware live login tests with institution consent; exact redirect/domain mapping and third-party-cookie evaluation; properly scoped exam mode with a separate browser policy/profile and verified shortcut containment. Never enter real exam credentials into CI fixtures.

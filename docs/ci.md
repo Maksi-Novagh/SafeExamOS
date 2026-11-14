@@ -480,3 +480,8 @@ Added local-only `demo.html` and dependency-free `demo-exam.js`. The launcher ac
 ### 2026-11-14 — SEB inspection and Chromium policy baseline (awaiting CI)
 
 `tests/inspect-seb-smoke.py` covers gzip/plnd/gzip plist, encrypted format rejection, malformed input, and maximum size. `scripts/check-chromium-policy.py` validates the expected managed Chromium policy keys, including disabled DevTools, printing, downloads, popups, extensions and a default HTTP/HTTPS navigation block. Existing Actions YAML is unchanged. A green static check does not demonstrate that Chromium actually blocks `Ctrl+T` or that the resulting client is SEB-compatible; this must be verified with live input tests.
+
+
+### 2026-11-14 — managed school-portal catalog (implementation; CI pending)
+
+The launcher now includes a restricted pre-exam portal selector. `config/portals.json` is the administrator-owned source for supported platforms. `scripts/render-portals.py` generates both the browser-facing portal catalog and Chromium managed URL/popup exceptions. The existing static job validates their exact consistency with `--check`, rejects unrecognized/unsafe portal URLs and runs `tests/portal-policy-smoke.py` plus `tests/portal-browser-smoke.cjs`. The test data contains no passwords or login tokens. The CI does not log in to Smartschool and cannot certify arbitrary exam-provider behavior. The existing workflow YAML is unchanged.

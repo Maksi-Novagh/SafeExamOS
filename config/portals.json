@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "portals": [
+    {
+      "id": "smartschool",
+      "label": "Smartschool",
+      "kind": "smartschool"
+    }
+  ],
+  "identity_origins": [
+    "https://accounts.google.com",
+    "https://login.live.com",
+    "https://login.microsoftonline.com"
+  ]
+}

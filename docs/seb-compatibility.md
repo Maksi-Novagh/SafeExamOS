@@ -153,3 +153,8 @@ Do not use production exams for compatibility testing.
 ## 2026-11-14 — L0 read-only inspection milestone
 
 The repository now includes `scripts/inspect-seb.py`, a limited `.seb` format inspector for the official outer gzip / `plnd` / inner gzip XML-plist form. It recognizes key names without exposing values. Encrypted configurations and unknown formats are explicitly rejected; the inspector does not apply settings or launch an exam. See [the implementation notes](seb-inspection-and-browser-policy.md). Do not count this as L1/real exam support.
+
+
+## School portal browsing (not SEB compatibility)
+
+The configurable Smartschool/other-platform login path described in [school-portals.md](school-portals.md) is a **pre-exam access feature** only. It does not satisfy SEB encrypted configuration, URL/session policy, Browser Exam Key/Config Key or SEB Server requirements. Institution approval, external redirects, SSO and exact examination content still require testing and a separate authenticated exam-mode policy.

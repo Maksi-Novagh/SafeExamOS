@@ -26,6 +26,8 @@ Current verified milestones (latest full CI pass: [run #42, 2026-11-13](https://
 - asynchronous hardware/network pre-flight with a fail-closed initial snapshot;
 - framebuffer evidence captured by CI.
 
+Pre-exam **school portal browser MVP** (2026-11-14, CI pending): choose Smartschool and enter a school platform name to open the institution's canonical HTTPS login page. The browser allows only administratively configured portal/SSO origins under Chromium managed policy. This is **not** an unrestricted browser, not a validated Smartschool examination integration, and not a secure exam session. [Portal integration details](docs/school-portals.md).
+
 The November 14 security baseline adds a **read-only `.seb` format inspector** and stricter Chromium managed policies (DevTools and ordinary external navigation blocked by default). These are partial defensive controls, **not SEB compatibility or full shortcut lockdown**. `Ctrl+T` and other browser/native shortcuts remain an explicitly open release blocker until live tests confirm command interception. See [SEB inspection and browser policy](docs/seb-inspection-and-browser-policy.md).
 
 The repository remains documentation-first: implementation, tests and documentation are updated together.

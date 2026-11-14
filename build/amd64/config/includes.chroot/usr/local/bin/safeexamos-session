@@ -18,6 +18,8 @@ cp /usr/share/safeexamos/launcher/index.html "$RUNTIME_LAUNCHER/index.html"
 cp /usr/share/safeexamos/launcher/demo.html "$RUNTIME_LAUNCHER/demo.html"
 cp /usr/share/safeexamos/launcher/demo-exam.js "$RUNTIME_LAUNCHER/demo-exam.js"
 cp /usr/share/safeexamos/launcher/preflight.js "$RUNTIME_LAUNCHER/preflight.js"
+cp /usr/share/safeexamos/launcher/portals.js "$RUNTIME_LAUNCHER/portals.js"
+cp /usr/share/safeexamos/launcher/portal-browser.js "$RUNTIME_LAUNCHER/portal-browser.js"
 echo "SAFEEXAMOS_PREFLIGHT_ASYNC_START"
 (
   # Keep the snapshot current when DHCP finishes or the network changes.
