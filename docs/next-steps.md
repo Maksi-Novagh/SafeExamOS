@@ -67,3 +67,10 @@ Virtualization detection remains deferred, as previously requested; QEMU is a va
 ## User-visible VMware feedback (2026-11-13)
 
 An actual VMware Workstation boot shows the pre-flight launcher, VMware SVGA II display, six input devices, and an ephemeral live session. The NIC `ens33` exists, but no default route is established at the timestamp shown; a later DHCP result was not automatically refreshed by the previous UI. Refresh support and non-scrolling input focus have been implemented for subsequent CI verification. The next engineering gate remains reliable network setup and a local, explicitly non-production demonstration exam. Hardware model certification and virtualization detection remain deferred.
+
+
+## Offline demonstration examination (2026-11-14)
+
+The first *local-only* exam path is implemented as a separate `demo.html` and `demo-exam.js`, accessed by entering **DEMO** in the existing launcher after its current pre-flight is not Blocking. It contains four fictional multiple-choice questions, previous/next navigation, an answered count, review including unanswered questions, explicit local submission and a confirmation screen. The demo does not fetch an exam, use a server, grade a student or persist a result. Responses are kept in volatile JS memory and cleared on submission. Leaving the demo discards the page's ephemeral state. The standard exam-code flow remains intentionally unsupported. The demo is a UI and state-transition exercise, **not** an exam-security guarantee.
+
+The existing build-tree check now runs `tests/demo-exam-smoke.cjs` alongside the launcher/pre-flight fixtures. Further evidence required: real Chromium/QEMU interaction with the demo screen, session crash/recovery/teardown and UEFI/physical boot. The original SEB integration and shortcut lockdown remain separate milestones. No new GitHub workflow is added.

@@ -29,7 +29,7 @@ function boot(data,nextData){
     return els.get(id);
   }
   const ctx={
-    window:{SAFEEXAMOS_PREFLIGHT:data},
+    window:{SAFEEXAMOS_PREFLIGHT:data,location:{assign(target){alerts.push('NAV:'+target);}}},
     alert(s){alerts.push(s);},
     document:{
       getElementById:get,
@@ -56,7 +56,10 @@ assert.equal(ok.get('keyboard-typing-feedback').textContent,'Keyboard input dete
 assert.match(ok.get('keyboard-detail').textContent,/Input detected/);
 ok.get('code').value='TEST';
 ok.get('continue').handlers.click();
-assert.match(ok.alerts[0],/Prototype only/);
+assert.match(ok.alerts[0],/enter DEMO/);
+ok.get('code').value='demo';
+ok.get('continue').handlers.click();
+assert.equal(ok.alerts[1],'NAV:demo.html');
 
 const blocked=boot(state({collectorStatus:'degraded',memoryMiB:0,inputDevices:0}));
 assert.equal(blocked.get('compat-status').textContent,'Blocking');

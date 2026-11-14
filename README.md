@@ -30,6 +30,8 @@ The repository remains documentation-first: implementation, tests and documentat
 
 Autonomous regression work (2026-11-13): deterministic pre-flight/launcher fixtures passed in run #45, but the stronger QEMU visual assertion exposed a black frame and Cage EGL crash. A software-renderer correction is pending CI validation; no visible-UI success is claimed yet. These checks do not replace real-hardware certification or proof of exam security.
 
+The image now includes a **DEMO** offline practice exam (four fictional questions and local-only submission), with automated state/UI fixtures; full graphical validation is pending. This is not a real exam or an SEB implementation.
+
 Pre-flight UI includes a typing-test field and a local `Supported / Warning / Blocking` prototype verdict. The graphical CI does **not** exercise keyboard interaction, inspect the UI contents, or certify verdict correctness. Interactive Wi-Fi joining and system-level keyboard-layout switching remain pending.
 
 The original **2026-11-04** reference-acceptance deadline has passed without full completion. Run #42 verifies QEMU graphical **smoke**, not UEFI bootloader handoff, live keyboard input, clean state destruction or Lenovo hardware. See the [historical release-target checklist](docs/release-target-2026-11-04.md) and the [next validation plan](docs/next-steps.md).

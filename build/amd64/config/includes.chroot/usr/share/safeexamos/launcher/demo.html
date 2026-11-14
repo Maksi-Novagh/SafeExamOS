@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SafeExamOS · Offline demo exam</title>
+<style>
+:root{font-family:"Segoe UI","Noto Sans","Liberation Sans",sans-serif;color:#000;background:#f0f0f0;--accent:dodgerblue;--hover:lightblue;--muted:dimgray;--ok:#2f7d32}
+*{box-sizing:border-box}
+body{margin:0;font-size:14px;background:#f0f0f0}
+main{min-height:100vh;padding:22px;display:grid;place-items:center}
+.window{width:min(900px,100%);border:1px solid var(--accent);background:#fff}
+header,.panel,footer,.notice{padding:16px 20px}
+header{display:flex;justify-content:space-between;align-items:start;gap:16px;border-bottom:1px solid #ddd}
+h1{font-size:23px;font-weight:600;margin:0}
+h2{font-size:17px;margin:0 0 14px}
+.product{color:var(--muted);font-size:12px}
+.notice{border-bottom:1px solid #ddd;background:#f8f8f8;color:var(--muted)}
+.panel{border-bottom:1px solid #ddd}
+.status{border:1px solid var(--accent);padding:5px 8px;font-size:12px}
+.muted{color:var(--muted)}
+.meta{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}
+progress{display:block;width:100%;height:12px;margin:0 0 16px;accent-color:var(--accent)}
+fieldset{border:0;padding:0;margin:0}
+legend{font-weight:600;font-size:17px;margin:0 0 16px}
+.option{display:flex;gap:12px;align-items:center;padding:13px 12px;border:1px solid #ddd;margin-bottom:10px;cursor:pointer}
+.option:hover{background:#eff7ff;border-color:var(--accent)}
+input[type=radio]{accent-color:var(--accent);width:18px;height:18px}
+.actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px;margin-top:22px}
+button{font:inherit;min-height:36px;padding:7px 14px;border:1px solid #aaa;background:#fff;cursor:pointer}
+button:hover{background:var(--hover);border-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{color:#fff;background:var(--accent);border-color:var(--accent);font-weight:600}
+button:disabled{opacity:.45;cursor:not-allowed}
+[hidden]{display:none!important}
+ul{line-height:2}
+footer{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:12px;background:#f0f0f0}
+@media(max-width:650px){main{padding:8px}header,footer,.meta{flex-direction:column}.actions button{flex:1}}
+</style>
+</head>
+<body>
+<main>
+<section class="window">
+<header>
+<div><div class="product">SafeExamOS / Practice environment</div><h1>Offline demonstration exam</h1></div>
+<span class="status" id="demo-phase" role="status" aria-live="polite">Practice in progress</span>
+</header>
+<div class="notice"><strong>DEMO ONLY.</strong> This example contains four fictitious questions. No teacher, server, grade or SEB configuration is connected. Answers stay in this page's temporary memory.</div>
+<section class="panel">
+<div class="meta">
+<span id="demo-question-number">Question 1 of 4</span>
+<span class="muted" id="demo-progress-text">0 of 4 answered</span>
+</div>
+<progress id="demo-progress" max="4" value="0" aria-label="Questions answered"></progress>
+<div id="question-panel">
+<fieldset>
+<legend id="demo-question">Loading demonstration question…</legend>
+<div id="demo-options"></div>
+</fieldset>
+<div class="actions">
+<button type="button" id="demo-prev">Previous</button>
+<button type="button" id="demo-next">Next</button>
+<button type="button" class="primary" id="demo-review">Review and submit</button>
+</div>
+</div>
+<div id="review-panel" hidden>
+<h2>Review before submission</h2>
+<p class="muted" id="demo-review-summary"></p>
+<ul id="demo-review-list"></ul>
+<div class="actions">
+<button type="button" id="demo-resume">Back to questions</button>
+<button type="button" class="primary" id="demo-submit">Confirm local submission</button>
+</div>
+</div>
+<div id="receipt-panel" hidden>
+<h2>Demonstration submitted</h2>
+<p id="demo-receipt-text" role="status" aria-live="polite"></p>
+<p class="muted">This is not a real examination receipt. No result has been transmitted, stored or graded.</p>
+<div class="actions"><button type="button" class="primary" id="demo-done">Return to launcher</button></div>
+</div>
+<div id="discard-panel" hidden>
+<h2>Leave this demonstration?</h2>
+<p>Your unsent local answers will be discarded. This does not terminate a real exam session.</p>
+<div class="actions">
+<button type="button" id="demo-stay">Continue practice</button>
+<button type="button" class="primary" id="demo-discard">Discard and return</button>
+</div>
+</div>
+</section>
+<footer>
+<span>Independent prototype · practice only</span>
+<button id="demo-exit" type="button">Leave demonstration</button>
+</footer>
+</section>
+</main>
+<script src="demo-exam.js"></script>
+<script>SafeExamDemo.mount(document,window);</script>
+</body>
+</html>
