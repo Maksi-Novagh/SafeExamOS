@@ -64,7 +64,7 @@ assert.equal(ok.alerts[1],'NAV:demo.html');
 const blocked=boot(state({collectorStatus:'degraded',memoryMiB:0,inputDevices:0}));
 assert.equal(blocked.get('compat-status').textContent,'Blocking');
 assert.match(blocked.get('compat-detail').textContent,/pre-flight inventory incomplete/);
-blocked.get('code').value='TEST';
+blocked.get('code').value='DEMO';
 blocked.get('continue').handlers.click();
 assert.match(blocked.alerts[0],/not completed|incomplete/i);
 
