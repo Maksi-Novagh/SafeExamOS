@@ -490,3 +490,8 @@ The launcher now includes a restricted pre-exam portal selector. `config/portals
 ### 2026-11-15 — isolated portal/demo supervisor (implementation, CI pending)
 
 The kiosk now invokes an unprivileged local browser-mode supervisor from Cage. It serves the launcher on loopback and uses an explicit local token-authenticated mode transition to switch between separate ephemeral portal/demo Chromium profiles. Static fixture tests check restricted file serving, token rotation, same-origin requests and separate command-line profile directories. The existing four-job workflow is unchanged. A passing static fixture alone cannot establish a secure lockdown, live Chromium transition, or differentiated browser policies.
+
+
+### 2026-11-15 — native Linux SEB lab browser foundation (CI pending)
+
+The build now contains a **separate, optional native GTK/WebKit2GTK 4.1 application** rather than altering the existing Smartschool Chromium portal. Pure Python policy tests reject unknown settings, unsafe/non-HTTPS origins, unsupported upload/download privileges and invalid files. `scripts/check-build-tree.sh` invokes `tests/linux-seb-smoke.py` and Python syntax checks; `python3-gi`, `gir1.2-gtk-3.0` and `gir1.2-webkit2-4.1` are explicit Debian packages. A green static check will validate the policy model, not the actual GUI, network behavior or exam security. The application is not autostarted or represented as official Safe Exam Browser.

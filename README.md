@@ -173,3 +173,6 @@ Upstream SEB repositories have their own licenses (many use MPL-2.0). SafeExamOS
 
 
 The November 15 mode-supervisor prototype separates the school portal browser and offline DEMO into sequential Chromium processes with different temporary profiles and token-authorized local transitions. **This is not yet a secure exam mode** because system browser policies are still shared and keyboard commands remain a release blocker. [Technical details](docs/browser-mode-supervisor.md).
+
+
+**Native Linux SEB client (experimental):** a separately packaged GTK 3 / WebKit2GTK 4.1 browser with strict lab-only configuration validation, exact HTTPS-origin allowlisting and in-memory WebKit context has been added. This does **not** replace the existing Smartschool Chromium portal, nor does it claim encrypted `.seb`/SEB Server/BEK/CK or a fully locked examination session. See [Native Linux SEB architecture](docs/linux-seb-client.md).

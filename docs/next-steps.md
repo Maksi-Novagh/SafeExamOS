@@ -91,3 +91,8 @@ Next acceptance steps: QEMU/VMware live login tests with institution consent; ex
 ## 2026-11-15 — mode-separated browser prototype
 
 The launcher-to-DEMO transition now replaces the browser process and its temporary profile rather than navigating within the same Chromium profile. A loopback-only supervisor authorizes the transition and serves different local page sets by phase. This is a **data isolation milestone only**: the system-wide Chromium URL exceptions are still shared, and the compositor/shortcut controls remain unverified. See [browser mode supervisor](browser-mode-supervisor.md).
+
+
+## Native Linux SEB application — 2026-11-15
+
+A separate GTK/WebKit2GTK Linux client is now staged in `linux-seb/` and in the Debian live image, without replacing the verified Chromium/Smartschool UI. It offers lab configuration validation, a one-window native browser and conservative navigation restrictions. Its GUI has not yet been exercised by QEMU; the policy model is unit-tested. The next development priority is a GUI smoke plus a controlled application handoff, then official `.seb` cryptographic and SEB Server interoperability research. See [native client](linux-seb-client.md). Do not confuse this proof-of-concept with a complete Windows/macOS SEB port.

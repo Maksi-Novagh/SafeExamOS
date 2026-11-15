@@ -158,3 +158,8 @@ The repository now includes `scripts/inspect-seb.py`, a limited `.seb` format in
 ## School portal browsing (not SEB compatibility)
 
 The configurable Smartschool/other-platform login path described in [school-portals.md](school-portals.md) is a **pre-exam access feature** only. It does not satisfy SEB encrypted configuration, URL/session policy, Browser Exam Key/Config Key or SEB Server requirements. Institution approval, external redirects, SSO and exact examination content still require testing and a separate authenticated exam-mode policy.
+
+
+## Independent native Linux application
+
+The Linux-native browser at `linux-seb/` uses Debian GTK3 and WebKit2GTK 4.1. It takes a strictly restricted *project-specific lab* JSON configuration, not an official `.seb` file. It does not implement Browser Exam Key, Configuration Key, password/certificate-encrypted `.seb`, SEB Server or lockdown certification. The Windows 3.10.3 MPL-2.0 repository is the architecture reference; macOS sources are a secondary behavior reference. Neither is trivially cross-compilable. See [linux-seb-client.md](linux-seb-client.md).

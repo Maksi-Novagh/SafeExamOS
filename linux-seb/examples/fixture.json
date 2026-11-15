@@ -1,0 +1,10 @@
+{
+  "schema": "safeexamos-linux-seb-lab-v1",
+  "title": "Linux SEB lab examination (not official)",
+  "start_url": "https://exam.example.org/start",
+  "allowed_origins": [
+    "https://exam.example.org"
+  ],
+  "allow_downloads": false,
+  "allow_uploads": false
+}
