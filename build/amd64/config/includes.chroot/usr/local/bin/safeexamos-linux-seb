@@ -37,13 +37,27 @@ small { color: #666; }
 <small>EXPERIMENTAL - NOT OFFICIAL SAFE EXAM BROWSER</small>
 </main></body></html>"""
 
+# CI-only child surface: distinct orange pixels prove that a *second* WebKit
+# page is painted above the blue primary surface. No external URL is fetched.
+OFFLINE_CHILD_HTML = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+body{margin:0;padding:22px;font-family:sans-serif;background:#fff;color:#252525}
+main{background:white;border:2px solid #ed6a17;padding:24px}
+h1{font-size:26px}.orange{background:#ed6a17;height:32px;margin:18px 0}
+</style></head><body><main>
+<h1>Managed secondary browser window</h1>
+<div class="orange"></div>
+<p>Separate native WebKitGTK surface. Offline QEMU fixture only.</p>
+</main></body></html>"""
 
-def run_native(policy, *, smoke_ui: bool = False) -> int:
+
+def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False) -> int:
     try:
         import gi
         gi.require_version("Gtk", "3.0")
         gi.require_version("WebKit2", "4.1")
-        from gi.repository import Gdk, Gtk, WebKit2
+        from gi.repository import Gdk, GLib, Gtk, WebKit2
     except (ImportError, ValueError) as exc:
         raise RuntimeError("GTK 3 / WebKit2GTK 4.1 dependencies unavailable") from exc
 
@@ -61,6 +75,7 @@ def run_native(policy, *, smoke_ui: bool = False) -> int:
             self.set_decorated(False)
             self.fullscreen()
             self.record = main_record
+            self._ci_child_started = False
             self.connect("delete-event", self._deny_close)
             self.connect("key-press-event", self._intercept_keys)
 
@@ -102,8 +117,12 @@ def run_native(policy, *, smoke_ui: bool = False) -> int:
         def _reject_download(_context, download):
             download.cancel()
 
-        def _managed_view(self, record):
-            view = WebKit2.WebView.new_with_context(self.context)
+        def _managed_view(self, record, related_view=None):
+            # WebKit requires popup WebViews to be related to their opener.
+            # This also keeps secondary pages in the ephemeral WebContext.
+            view = (WebKit2.WebView.new_with_related_view(related_view)
+                    if related_view is not None
+                    else WebKit2.WebView.new_with_context(self.context))
             settings = view.get_settings()
             settings.set_enable_developer_extras(False)
             settings.set_enable_javascript(True)
@@ -124,24 +143,48 @@ def run_native(policy, *, smoke_ui: bool = False) -> int:
             except (AttributeError, WindowPolicyError, TypeError):
                 print("SAFEEXAMOS_NATIVE_SEB_DENIED_CHILD", file=sys.stderr)
                 return None
-            view = self._managed_view(record)
+            view = self._managed_view(record, related_view=_view)
             view.connect("ready-to-show", self._show_child, record)
             view.connect("close", self._close_child, record.window_id)
             return view
 
         def _show_child(self, view, record):
-            # A secondary window belongs to the same supervised WebKit app,
-            # not to a generic desktop launcher or a second Chromium process.
+            # Real pop-ups are shown only after WebKit emits ready-to-show.
+            self._present_child(view, record)
+
+        def _present_child(self, view, record):
             if record.window_id not in manager.records:
-                return
-            child = Gtk.Window(title="SEB permitted resource")
-            child.set_default_size(800, 600)
+                return None
+            child = Gtk.Window(title="SEB approved resource")
+            # The compositor must preserve a visible portion of the primary
+            # surface so the CI can prove that both windows were rendered.
+            child.set_default_size(640, 380)
             child.set_decorated(False)
+            child.set_transient_for(self)
+            child.set_modal(False)
+            child.connect("key-press-event", self._intercept_keys)
             child.connect("delete-event", lambda *_: self._close_child(view, record.window_id))
             child.add(view)
             secondary_windows[record.window_id] = child
             child.show_all()
             print("SAFEEXAMOS_NATIVE_SEB_CHILD_OPEN", flush=True)
+            return child
+
+        def _open_ci_child(self):
+            # Only an explicit QEMU lab command line can reach this function.
+            # The policy is checked just as for an ordinary child request,
+            # but the child content comes from an in-memory offline fixture.
+            target = "https://exam.example.org/resource"
+            try:
+                record = manager.open_child(main_record.window_id, target)
+            except WindowPolicyError as exc:
+                print("SAFEEXAMOS_NATIVE_SEB_CI_CHILD_DENIED: " + str(exc), file=sys.stderr)
+                return False
+            view = self._managed_view(record, related_view=self.web)
+            view.connect("close", self._close_child, record.window_id)
+            if self._present_child(view, record) is not None:
+                view.load_html(OFFLINE_CHILD_HTML, "about:blank")
+            return False
 
         def _close_child(self, _view, window_id):
             try:
@@ -160,9 +203,16 @@ def run_native(policy, *, smoke_ui: bool = False) -> int:
             request.deny()
             return True
 
-        def _load_changed(self, _view, event):
-            if smoke_ui and event == WebKit2.LoadEvent.FINISHED:
+        def _load_changed(self, view, event):
+            if not smoke_ui or event != WebKit2.LoadEvent.FINISHED:
+                return
+            if view is self.web:
                 print("SAFEEXAMOS_NATIVE_SEB_UI_READY", flush=True)
+                if smoke_windows and not self._ci_child_started:
+                    self._ci_child_started = True
+                    GLib.idle_add(self._open_ci_child)
+            elif smoke_windows:
+                print("SAFEEXAMOS_NATIVE_SEB_CHILD_READY", flush=True)
 
         def _decide_policy(self, _view, decision, decision_type):
             try:
@@ -211,6 +261,8 @@ def main(argv=None) -> int:
                         help="Validate a lab configuration without launching GUI")
     parser.add_argument("--smoke-ui", action="store_true",
                         help="CI-only offline WebKitGTK render test; not an examination")
+    parser.add_argument("--smoke-windows", action="store_true",
+                        help="CI-only second WebKitGTK window fixture; requires --smoke-ui")
     args = parser.parse_args(argv)
     try:
         policy = load_config(args.config)
@@ -219,7 +271,13 @@ def main(argv=None) -> int:
             return 0
         if args.smoke_ui and os.environ.get("SAFEEXAMOS_NATIVE_CI") != "1":
             raise PolicyError("Offline UI smoke is only available in CI mode")
-        return run_native(policy, smoke_ui=args.smoke_ui)
+        if args.smoke_windows and not args.smoke_ui:
+            raise PolicyError("Multiwindow CI requires the offline UI fixture")
+        if args.smoke_windows:
+            policy = replace(policy, max_browser_windows=2,
+                             allow_secondary_windows=True)
+        return run_native(policy, smoke_ui=args.smoke_ui,
+                          smoke_windows=args.smoke_windows)
     except (PolicyError, RuntimeError) as error:
         print("SAFEEXAMOS_LINUX_SEB_ERROR: " + str(error), file=sys.stderr)
         return 2
