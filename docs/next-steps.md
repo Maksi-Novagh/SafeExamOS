@@ -96,3 +96,7 @@ The launcher-to-DEMO transition now replaces the browser process and its tempora
 ## Native Linux SEB application — 2026-11-15
 
 A separate GTK/WebKit2GTK Linux client is now staged in `linux-seb/` and in the Debian live image, without replacing the verified Chromium/Smartschool UI. It offers lab configuration validation, a one-window native browser and conservative navigation restrictions. Its GUI has not yet been exercised by QEMU; the policy model is unit-tested. The next development priority is a GUI smoke plus a controlled application handoff, then official `.seb` cryptographic and SEB Server interoperability research. See [native client](linux-seb-client.md). Do not confuse this proof-of-concept with a complete Windows/macOS SEB port.
+
+## Multiwindow and desktop confinement (2026-11-15)
+
+The first implementation supports controlled secondary WebKitGTK browser views in native Linux SEB and an experimental labwc compositor configuration, tested separately from normal boot. Default remains a single browser window. Additional *programs* are **not launched or approved**; that capability requires stronger OS-level isolation and audited application allowlists. The labwc environment intentionally has no default shell/terminal launch shortcuts, but is not a security boundary against all Wayland clients. Next: live child-window tests, compositing policy, surface restrictions, and crash/restart verification.

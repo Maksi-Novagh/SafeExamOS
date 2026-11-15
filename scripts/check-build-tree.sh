@@ -31,6 +31,10 @@ scripts/check-chromium-policy.py
 scripts/render-portals.py
 linux-seb/policy.py
 linux-seb/app.py
+linux-seb/windows.py
+tests/linux-seb-windows-smoke.py
+build/amd64/config/includes.chroot/usr/local/bin/linux_seb_windows.py
+build/amd64/config/includes.chroot/etc/safeexamos/labwc/rc.xml
 scripts/qemu-native-seb-smoke.sh
 build/amd64/config/includes.chroot/usr/share/safeexamos/linux-seb-fixture.json
 tests/linux-seb-smoke.py
@@ -69,7 +73,7 @@ done
 PKGS=build/amd64/config/package-lists/safeexamos.list.chroot
 SESSION=build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session
 
-for pkg in cage chromium network-manager user-setup seatd libseat1 python3 python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1; do
+for pkg in labwc cage chromium network-manager user-setup seatd libseat1 python3 python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1; do
   grep -Eq "^$pkg$" "$PKGS" || {
     echo "error: required runtime package missing: $pkg" >&2
     exit 1
@@ -137,7 +141,8 @@ python3 ./tests/portal-policy-smoke.py
 node ./tests/portal-browser-smoke.cjs
 python3 ./tests/session-supervisor-smoke.py
 python3 ./tests/linux-seb-smoke.py
-python3 -m py_compile ./linux-seb/app.py ./linux-seb/policy.py
+python3 ./tests/linux-seb-windows-smoke.py
+python3 -m py_compile ./linux-seb/app.py ./linux-seb/policy.py ./linux-seb/windows.py
 sh ./tests/preflight-smoke.sh
 python3 -m py_compile ./scripts/verify-framebuffer.py
 

@@ -14,13 +14,13 @@ for cmd in qemu-system-x86_64 xorriso socat; do
   }
 done
 
-mkdir -p .ci/qemu-native
-LOG=.ci/qemu-native/serial.log
-MON=.ci/qemu-native/monitor.sock
-PPM=.ci/qemu-native/safeexamos-native.ppm
-QEMU_ERR=.ci/qemu-native/qemu-stderr.log
-KERNEL=.ci/qemu-native/vmlinuz
-INITRD=.ci/qemu-native/initrd.img
+mkdir -p ${OUTDIR:-.ci/qemu-native}
+LOG=${OUTDIR:-.ci/qemu-native}/serial.log
+MON=${OUTDIR:-.ci/qemu-native}/monitor.sock
+PPM=${OUTDIR:-.ci/qemu-native}/safeexamos-native.ppm
+QEMU_ERR=${OUTDIR:-.ci/qemu-native}/qemu-stderr.log
+KERNEL=${OUTDIR:-.ci/qemu-native}/vmlinuz
+INITRD=${OUTDIR:-.ci/qemu-native}/initrd.img
 
 rm -f "$LOG" "$MON" "$PPM" "$QEMU_ERR" "$KERNEL" "$INITRD"
 
@@ -29,7 +29,7 @@ xorriso -osirrox on -indev "$ISO"   -extract /live/vmlinuz "$KERNEL"   -extract 
 test -s "$KERNEL"
 test -s "$INITRD"
 
-qemu-system-x86_64   -machine q35,accel=tcg   -cpu max   -m 2048   -smp 2   -kernel "$KERNEL"   -initrd "$INITRD"   -append "boot=live components quiet console=ttyS0,115200n8 username=exam hostname=safeexamos locales=en_US.UTF-8 keyboard-layouts=us safeexamos.native_ci=1"   -drive "file=$ISO,media=cdrom,readonly=on,format=raw"   -device virtio-vga   -device virtio-net-pci,netdev=n0   -netdev user,id=n0   -display none   -serial "file:$LOG"   -monitor "unix:$MON,server,nowait"   -no-reboot   >/dev/null 2>"$QEMU_ERR" &
+qemu-system-x86_64   -machine q35,accel=tcg   -cpu max   -m 2048   -smp 2   -kernel "$KERNEL"   -initrd "$INITRD"   -append "boot=live components quiet console=ttyS0,115200n8 username=exam hostname=safeexamos locales=en_US.UTF-8 keyboard-layouts=us ${NATIVE_KERNEL_FLAG:-safeexamos.native_ci=1}"   -drive "file=$ISO,media=cdrom,readonly=on,format=raw"   -device virtio-vga   -device virtio-net-pci,netdev=n0   -netdev user,id=n0   -display none   -serial "file:$LOG"   -monitor "unix:$MON,server,nowait"   -no-reboot   >/dev/null 2>"$QEMU_ERR" &
 
 QEMU_PID=$!
 cleanup() {

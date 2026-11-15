@@ -180,3 +180,38 @@ jobs:
             .ci/qemu-native/safeexamos-native.ppm
           if-no-files-found: warn
           retention-days: 14
+
+  qemu-managed-windows:
+    name: QEMU managed window compositor smoke
+    needs: build-amd64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download ISO artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: SafeExamOS-amd64-${{ github.sha }}
+          path: build/amd64/out
+
+      - name: Install QEMU tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends qemu-system-x86 xorriso socat
+
+      - name: Verify restricted labwc native exam surface
+        env:
+          OUTDIR: .ci/qemu-windows
+          NATIVE_KERNEL_FLAG: safeexamos.windows_ci=1
+        run: ./scripts/qemu-native-seb-smoke.sh build/amd64/out/SafeExamOS-amd64.iso
+
+      - name: Save managed compositor evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qemu-managed-windows-${{ github.sha }}
+          path: .ci/qemu-windows/
+          if-no-files-found: warn
+          retention-days: 14

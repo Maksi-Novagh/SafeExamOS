@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Experimental labwc session; not a secure window whitelist. -->
+<labwc_config>
+  <core>
+    <decoration>client</decoration>
+    <xwaylandPersistence>no</xwaylandPersistence>
+  </core>
+  <desktops>
+    <number>1</number>
+    <popupTime>0</popupTime>
+  </desktops>
+  <keyboard>
+    <!-- Deliberately no default bindings, Execute, ShowMenu or Close. -->
+    <keybind key="A-Tab"><action name="NextWindow"/></keybind>
+    <keybind key="A-S-Tab"><action name="PreviousWindow"/></keybind>
+  </keyboard>
+  <mouse>
+    <!-- No desktop application menu, launch action or default shortcuts. -->
+  </mouse>
+  <windowRules>
+    <windowRule identifier="*">
+      <action name="Maximize"/>
+    </windowRule>
+  </windowRules>
+</labwc_config>

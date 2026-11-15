@@ -91,3 +91,13 @@ When the explicit parameter is present, the unprivileged Wayland session launche
 The `QEMU native WebKitGTK smoke` Actions job is deliberately separate from the standard four jobs and consumes the already built ISO. **A first green native run is required before declaring the GTK/WebKit application functional in QEMU.** A visual image alone does not validate URL filtering, keyboard lockdown, renderer stability on VMware, SEB compatibility or security.
 
 The laboratory fixture is installed at `/usr/share/safeexamos/linux-seb-fixture.json` and is never used to authenticate a real examination.
+
+## Managed multiwindow experiment (2026-11-15)
+
+A new pure-Python registry (`linux-seb/windows.py`) tracks the native browser's main WebView and explicitly approved secondary WebViews. The extended laboratory configuration accepts `max_browser_windows` (1–3) and `allow_secondary_windows` (boolean). By default **all secondary windows are denied**. Both settings must agree, URL origin policy applies to each child, and exceeding the count is blocked. Only the main SEB application may create managed WebKitGTK child views; the module never executes arbitrary applications.
+
+For future scenarios requiring several simultaneously visible windows, the Debian image now includes **labwc**, an optional stacked-window Wayland compositor. The experimental QEMU boot flag `safeexamos.windows_ci=1` selects labwc with a controlled `rc.xml` that avoids default application-launching shortcuts, menu actions, and additional workspaces. This option is never selected by normal boot, which remains Cage and the Chromium portal supervisor. The dedicated `QEMU managed window compositor smoke` job starts the native offline fixture in labwc and checks the framebuffer. The existing Cage tests are preserved.
+
+**Crucial boundary:** a stock labwc configuration is *not* a security-grade global surface/process allowlist, so it cannot prove that an unapproved local Wayland client could not connect to the display. The WebKit application registry only manages its own child views, not unrelated programs. At this stage arbitrary external applications are **not supported**; reliable native app control will need a compositor security policy or isolated Wayland socket/cgroup/permission boundary. Do not describe this as completed exam lockdown.
+
+The next tests should exercise the actual WebKit `create` and `ready-to-show` signals with controlled fixture URLs, verify that a second approved window appears, and attempt an unapproved Wayland client to measure the compositor boundary. The current window policy has deterministic unit tests; graphical tests prove only that the native UI renders under labwc.

@@ -69,6 +69,8 @@ class ExamPolicy:
     origins: frozenset[str]
     downloads: bool = False
     uploads: bool = False
+    max_browser_windows: int = 1
+    allow_secondary_windows: bool = False
 
     def permits(self, uri: str) -> bool:
         try:
@@ -82,7 +84,7 @@ def parse_config(data: object) -> ExamPolicy:
     if not isinstance(data, dict):
         raise PolicyError("Configuration must be an object")
     required = {"schema", "title", "start_url", "allowed_origins"}
-    optional = {"allow_downloads", "allow_uploads"}
+    optional = {"allow_downloads", "allow_uploads", "max_browser_windows", "allow_secondary_windows"}
     unknown = set(data) - required - optional
     if unknown or not required.issubset(data):
         raise PolicyError("Unknown, incomplete, or unsupported configuration fields")
@@ -108,7 +110,16 @@ def parse_config(data: object) -> ExamPolicy:
     uploads = data.get("allow_uploads", False)
     if downloads is not False or uploads is not False:
         raise PolicyError("Downloads and uploads are not implemented safely yet")
-    return ExamPolicy(title, start_url, origins)
+    limit = data.get("max_browser_windows", 1)
+    allow_secondary = data.get("allow_secondary_windows", False)
+    if type(limit) is not int or not (1 <= limit <= 3):
+        raise PolicyError("Browser window limit must be an integer between 1 and 3")
+    if type(allow_secondary) is not bool:
+        raise PolicyError("Secondary window permission must be a boolean")
+    if (limit > 1) != allow_secondary:
+        raise PolicyError("Multiwindow settings must explicitly agree")
+    return ExamPolicy(title, start_url, origins, downloads, uploads,
+                      limit, allow_secondary)
 
 
 def load_config(path: str | Path) -> ExamPolicy:

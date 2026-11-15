@@ -501,3 +501,9 @@ The build now contains a **separate, optional native GTK/WebKit2GTK 4.1 applicat
 A new, separate QEMU graphical job boots the same Debian live ISO with the explicit **`safeexamos.native_ci=1`** kernel parameter. This selects the experimental native GTK/WebKitGTK offline page, leaving normal boot on the verified Chromium Smartschool portal. The test waits for a WebKit load-finished marker, captures a framebuffer and rejects black/blank renderings with the existing `verify-framebuffer.py` color signature.
 
 The job is not a full exam-launch or security regression test. It must pass before claiming the native GUI is operational. The existing regular QEMU boot and graphical tests remain unchanged.
+
+### 2026-11-15 — controlled multiwindow prototype (CI pending)
+
+The native Linux browser now tracks managed WebKitGTK child windows under a strict configuration (default: one window; 1–3 explicitly permitted maximum). `tests/linux-seb-windows-smoke.py` covers unauthorized child requests, exact origin boundaries, capacity, lifecycle and an experimental labwc configuration with no Execute/ShowMenu actions. The optional `safeexamos.windows_ci=1` QEMU path starts the native app under labwc and captures the framebuffer; Cage/Chromium paths remain unchanged.
+
+Passing the labwc screenshot test does **not** certify that a hostile process cannot open a Wayland surface, and the graphical CI does not yet test a second child window. These must remain security blockers until compositor-enforced process/surface policy and live tests exist.

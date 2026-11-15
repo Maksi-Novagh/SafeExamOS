@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 from linux_seb_policy import PolicyError, load_config
+from linux_seb_windows import ManagedWindows, WindowPolicyError
 
 
 # This page is only used in an explicit QEMU CI boot. It is never an exam.
@@ -48,28 +49,24 @@ def run_native(policy, *, smoke_ui: bool = False) -> int:
     if not Gtk.init_check()[0]:
         raise RuntimeError("No GTK display is available")
 
+    manager = ManagedWindows(policy)
+    main_record = manager.open_main()
+    secondary_windows = {}
+
     class ExamWindow(Gtk.Window):
         def __init__(self):
             super().__init__(title="SafeExamOS - Linux native examination client (experimental)")
             self.set_default_size(1024, 768)
             self.set_decorated(False)
             self.fullscreen()
+            self.record = main_record
             self.connect("delete-event", self._deny_close)
             self.connect("key-press-event", self._intercept_keys)
 
             self.context = WebKit2.WebContext.new_ephemeral()
             self.context.connect("download-started", self._reject_download)
             self.context.set_cache_model(WebKit2.CacheModel.DOCUMENT_VIEWER)
-            self.web = WebKit2.WebView.new_with_context(self.context)
-            settings = self.web.get_settings()
-            settings.set_enable_developer_extras(False)
-            settings.set_enable_javascript(True)
-            settings.set_enable_webgl(False)
-            self.web.connect("decide-policy", self._decide_policy)
-            self.web.connect("create", self._no_new_window)
-            self.web.connect("permission-request", self._deny_permission)
-            self.web.connect("context-menu", self._deny_context_menu)
-            self.web.connect("load-changed", self._load_changed)
+            self.web = self._managed_view(main_record)
             self.add(self.web)
 
             if smoke_ui:
@@ -104,9 +101,58 @@ def run_native(policy, *, smoke_ui: bool = False) -> int:
         def _reject_download(_context, download):
             download.cancel()
 
-        @staticmethod
-        def _no_new_window(_view, _action):
-            return None
+        def _managed_view(self, record):
+            view = WebKit2.WebView.new_with_context(self.context)
+            settings = view.get_settings()
+            settings.set_enable_developer_extras(False)
+            settings.set_enable_javascript(True)
+            settings.set_enable_webgl(False)
+            view.connect("decide-policy", self._decide_policy)
+            view.connect("create", self._new_window, record.window_id)
+            view.connect("permission-request", self._deny_permission)
+            view.connect("context-menu", self._deny_context_menu)
+            view.connect("load-changed", self._load_changed)
+            return view
+
+        def _new_window(self, _view, action, parent_id):
+            # WebKit's create signal occurs before a new page is committed.
+            # A child must have an approved exact HTTPS origin and capacity.
+            try:
+                uri = action.get_request().get_uri()
+                record = manager.open_child(parent_id, uri)
+            except (AttributeError, WindowPolicyError, TypeError):
+                print("SAFEEXAMOS_NATIVE_SEB_DENIED_CHILD", file=sys.stderr)
+                return None
+            view = self._managed_view(record)
+            view.connect("ready-to-show", self._show_child, record)
+            view.connect("close", self._close_child, record.window_id)
+            return view
+
+        def _show_child(self, view, record):
+            # A secondary window belongs to the same supervised WebKit app,
+            # not to a generic desktop launcher or a second Chromium process.
+            if record.window_id not in manager.records:
+                return
+            child = Gtk.Window(title="SEB permitted resource")
+            child.set_default_size(800, 600)
+            child.set_decorated(False)
+            child.connect("delete-event", lambda *_: self._close_child(view, record.window_id))
+            child.add(view)
+            secondary_windows[record.window_id] = child
+            child.show_all()
+            print("SAFEEXAMOS_NATIVE_SEB_CHILD_OPEN", flush=True)
+
+        def _close_child(self, _view, window_id):
+            try:
+                manager.close(window_id)
+            except WindowPolicyError:
+                return True
+            child = secondary_windows.pop(window_id, None)
+            if child is not None:
+                child.hide()
+                child.destroy()
+            print("SAFEEXAMOS_NATIVE_SEB_CHILD_CLOSED", flush=True)
+            return True
 
         @staticmethod
         def _deny_permission(_view, request):
@@ -120,7 +166,13 @@ def run_native(policy, *, smoke_ui: bool = False) -> int:
         def _decide_policy(self, _view, decision, decision_type):
             try:
                 if decision_type == WebKit2.PolicyDecisionType.NEW_WINDOW_ACTION:
-                    decision.ignore()
+                    # A child WebView is created by the managed create signal.
+                    # This decision is never permission to launch a foreign app.
+                    uri = decision.get_navigation_action().get_request().get_uri()
+                    if policy.allow_secondary_windows and policy.permits(uri):
+                        decision.use()
+                    else:
+                        decision.ignore()
                     return True
                 if decision_type == WebKit2.PolicyDecisionType.NAVIGATION_ACTION:
                     uri = decision.get_navigation_action().get_request().get_uri()
