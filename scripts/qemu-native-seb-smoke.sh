@@ -41,10 +41,18 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-echo "Waiting for native GTK/WebKitGTK offline launcher..."
+if [ "${NATIVE_KERNEL_FLAG:-}" = "safeexamos.windows_ci=1" ]; then
+  MARKER=SAFEEXAMOS_CI_MANAGED_WINDOWS_OK
+  FRAME_CHECK="--managed-child"
+else
+  MARKER=SAFEEXAMOS_CI_NATIVE_SEB_OK
+  FRAME_CHECK=""
+fi
+
+echo "Waiting for native GTK/WebKitGTK offline launcher ($MARKER)..."
 deadline=$(( $(date +%s) + 240 ))
 while [ "$(date +%s)" -lt "$deadline" ]; do
-  if grep -q 'SAFEEXAMOS_CI_NATIVE_SEB_OK' "$LOG" 2>/dev/null; then
+  if grep -q "$MARKER" "$LOG" 2>/dev/null; then
     echo "Graphical runtime marker received."
     break
   fi
@@ -65,7 +73,7 @@ while [ "$(date +%s)" -lt "$deadline" ]; do
   sleep 2
 done
 
-if ! grep -q 'SAFEEXAMOS_CI_NATIVE_SEB_OK' "$LOG" 2>/dev/null; then
+if ! grep -q "$MARKER" "$LOG" 2>/dev/null; then
   echo "error: graphical runtime marker not received" >&2
   tail -n 200 "$LOG" >&2 || true
   exit 1
@@ -78,14 +86,14 @@ frame_deadline=$(( $(date +%s) + 60 ))
 while [ "$(date +%s)" -lt "$frame_deadline" ]; do
   printf 'screendump %s\n' "$PPM" | socat - "UNIX-CONNECT:$MON" >/dev/null || true
   sleep 2
-  if test -s "$PPM" && python3 ./scripts/verify-framebuffer.py "$PPM"; then
+  if test -s "$PPM" && python3 ./scripts/verify-framebuffer.py "$PPM" $FRAME_CHECK; then
     ready=1
     break
   fi
   sleep 2
 done
 if [ "$ready" -ne 1 ]; then
-  echo "error: Cage/Chromium processes started but launcher pixels are not visible" >&2
+  echo "error: expected native rendered window pixels are not visible" >&2
   tail -n 100 "$LOG" >&2 || true
   exit 1
 fi

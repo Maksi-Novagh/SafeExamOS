@@ -101,3 +101,12 @@ For future scenarios requiring several simultaneously visible windows, the Debia
 **Crucial boundary:** a stock labwc configuration is *not* a security-grade global surface/process allowlist, so it cannot prove that an unapproved local Wayland client could not connect to the display. The WebKit application registry only manages its own child views, not unrelated programs. At this stage arbitrary external applications are **not supported**; reliable native app control will need a compositor security policy or isolated Wayland socket/cgroup/permission boundary. Do not describe this as completed exam lockdown.
 
 The next tests should exercise the actual WebKit `create` and `ready-to-show` signals with controlled fixture URLs, verify that a second approved window appears, and attempt an unapproved Wayland client to measure the compositor boundary. The current window policy has deterministic unit tests; graphical tests prove only that the native UI renders under labwc.
+
+
+## Live two-window QEMU verification — 2026-11-15
+
+The prior six-job green run #55 verified that labwc could render the main WebKitGTK window, but did **not** verify multiple windows. The next run introduces an explicit `safeexamos.windows_ci=1` fixture that creates a **second actual WebKitGTK view/window** using `WebKit2.WebView.new_with_related_view` and a local, in-memory orange HTML document. The primary view remains the previously validated blue-and-white document.
+
+The graphical observer only emits `SAFEEXAMOS_CI_MANAGED_WINDOWS_OK` after the second WebKit load-finished event (`SAFEEXAMOS_NATIVE_SEB_CHILD_READY`). The host's PPM checker must detect the blue primary page **and** a substantial orange area unique to the second page. Merely starting labwc and one WebKit process is no longer sufficient. A default production config still rejects all secondary windows; this two-window permission is injected only into the explicitly opted-in CI fixture. No network calls or real examination content are involved.
+
+This demonstrates basic stacked native WebKit windows when it passes, not OS-enforced prevention of unauthorized Wayland clients, real web popup signals, or a secure exam deployment. The next test gate is an untrusted-popup request against controlled local content, then compositor-level client isolation.

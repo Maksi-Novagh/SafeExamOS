@@ -7,6 +7,7 @@ NOT official SEB and NOT suitable for supervised examinations yet.
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import os
 import sys
 from pathlib import Path

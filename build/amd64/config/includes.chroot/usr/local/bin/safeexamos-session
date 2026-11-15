@@ -50,7 +50,7 @@ if grep -Eq '(^|[[:space:]])safeexamos.windows_ci=1([[:space:]]|$)' /proc/cmdlin
   export WEBKIT_DISABLE_COMPOSITING_MODE=1
   export WEBKIT_DISABLE_DMABUF_RENDERER=1
   echo "SAFEEXAMOS_MANAGED_WINDOWS_CI_START"
-  exec labwc -C /etc/safeexamos/labwc -S "/usr/local/bin/safeexamos-linux-seb --config /usr/share/safeexamos/linux-seb-fixture.json --smoke-ui"
+  exec labwc -C /etc/safeexamos/labwc -S "/usr/local/bin/safeexamos-linux-seb --config /usr/share/safeexamos/linux-seb-fixture.json --smoke-ui --smoke-windows"
 fi
 
 if grep -Eq '(^|[[:space:]])safeexamos.native_ci=1([[:space:]]|$)' /proc/cmdline; then

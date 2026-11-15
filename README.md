@@ -180,3 +180,6 @@ The November 15 mode-supervisor prototype separates the school portal browser an
 Native Linux GUI regression (2026-11-15): a separate CI-only QEMU boot path now launches the experimental GTK/WebKitGTK client with a fixed offline page and checks its rendered framebuffer. This does not change the default Chromium Smartschool session or mean SEB interoperability is complete. See [native client](docs/linux-seb-client.md).
 
 The native Linux port now contains an **experimental managed-window prototype**: configurable 1–3 WebKitGTK browser windows with strict URL policy and a separate QEMU-only labwc stacked-window session. Normal Cage/Chromium/Smartschool boot is unchanged. This is **not** a security-enforced allowlist for arbitrary Wayland clients. [Architecture and limits](docs/linux-seb-client.md).
+
+
+A strengthened QEMU multiwindow regression (2026-11-15) now checks for **two real WebKitGTK surfaces** with distinct blue/orange fixture colors and a child-specific readiness marker. This is a pending CI improvement, not proof of complete compositor lockdown. See [native Linux client](docs/linux-seb-client.md).

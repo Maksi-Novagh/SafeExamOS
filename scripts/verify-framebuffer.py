@@ -55,9 +55,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("baseline", help="PPM after launcher startup")
     parser.add_argument("--after-input", help="PPM after QEMU keyboard input")
+    parser.add_argument("--managed-child", action="store_true", help="Require rendered orange child window")
     args = parser.parse_args()
     width, height, before = read_ppm(args.baseline)
     verify_launcher(before)
+    if args.managed_child:
+        orange = sum(
+            1 for i in range(0, len(before), 3)
+            if before[i] >= 200 and 65 <= before[i + 1] <= 165
+            and before[i + 2] <= 85
+            and before[i] > before[i + 1] + 65
+        )
+        print(f"Managed child orange pixels: {orange}")
+        if orange < 1500:
+            raise ValueError("second WebKitGTK window is not visibly rendered")
     if args.after_input:
         width2, height2, after = read_ppm(args.after_input)
         if (width, height) != (width2, height2):

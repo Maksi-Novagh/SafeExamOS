@@ -69,6 +69,25 @@ class ManagedWindowTests(unittest.TestCase):
             with self.subTest(config=config), self.assertRaises(PolicyError):
                 parse_config(config)
 
+    def test_two_window_ci_fixture_is_explicit_and_offline(self):
+        app = (BASE / "app.py").read_text(encoding="utf-8")
+        session = (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session").read_text(encoding="utf-8")
+        observer = (ROOT / "build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-ui-marker").read_text(encoding="utf-8")
+        runner = (ROOT / "scripts/qemu-native-seb-smoke.sh").read_text(encoding="utf-8")
+        self.assertIn("--smoke-ui --smoke-windows", session)
+        self.assertIn("safeexamos.windows_ci=1", session)
+        self.assertIn("SAFEEXAMOS_NATIVE_SEB_CHILD_READY", app)
+        self.assertIn("SAFEEXAMOS_CI_MANAGED_WINDOWS_OK", observer)
+        self.assertIn("--managed-child", runner)
+        self.assertIn("WebKit2.WebView.new_with_related_view", app)
+        self.assertIn("OFFLINE_CHILD_HTML", app)
+        self.assertIn('smoke_windows and not args.smoke_ui', app)
+        self.assertIn("max_browser_windows=2", app)
+        self.assertNotIn("subprocess.Popen", app)
+        config = fixture()
+        self.assertNotIn("allow_secondary_windows", config)
+        self.assertFalse(parse_config(config).allow_secondary_windows)
+
     def test_no_arbitrary_program_spawn_or_desktop_launcher(self):
         config_path = ROOT / "build/amd64/config/includes.chroot/etc/safeexamos/labwc/rc.xml"
         root = ET.parse(config_path).getroot()

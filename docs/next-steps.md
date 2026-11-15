@@ -100,3 +100,8 @@ A separate GTK/WebKit2GTK Linux client is now staged in `linux-seb/` and in the 
 ## Multiwindow and desktop confinement (2026-11-15)
 
 The first implementation supports controlled secondary WebKitGTK browser views in native Linux SEB and an experimental labwc compositor configuration, tested separately from normal boot. Default remains a single browser window. Additional *programs* are **not launched or approved**; that capability requires stronger OS-level isolation and audited application allowlists. The labwc environment intentionally has no default shell/terminal launch shortcuts, but is not a security boundary against all Wayland clients. Next: live child-window tests, compositing policy, surface restrictions, and crash/restart verification.
+
+
+## Next graphics milestone (2026-11-15)
+
+The live QEMU test now aims to prove **two rendered WebKitGTK windows**, not just a labwc process and a main page. The second in-memory fixture uses an explicit CI-only policy override; production lab configurations still default to one window. If the framebuffer and child readiness marker pass, the next tasks are real WebKit `window.open` signal integration, controlled child close/reopen behavior, and OS-enforced Wayland client isolation. Do not mark labwc as a security boundary from a screenshot result.

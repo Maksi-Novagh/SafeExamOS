@@ -17,9 +17,5 @@
   <mouse>
     <!-- No desktop application menu, launch action or default shortcuts. -->
   </mouse>
-  <windowRules>
-    <windowRule identifier="*">
-      <action name="Maximize"/>
-    </windowRule>
-  </windowRules>
+  <!-- Do not maximize all child windows; the primary view is already fullscreen. -->
 </labwc_config>

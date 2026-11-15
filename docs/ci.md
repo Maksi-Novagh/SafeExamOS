@@ -507,3 +507,8 @@ The job is not a full exam-launch or security regression test. It must pass befo
 The native Linux browser now tracks managed WebKitGTK child windows under a strict configuration (default: one window; 1–3 explicitly permitted maximum). `tests/linux-seb-windows-smoke.py` covers unauthorized child requests, exact origin boundaries, capacity, lifecycle and an experimental labwc configuration with no Execute/ShowMenu actions. The optional `safeexamos.windows_ci=1` QEMU path starts the native app under labwc and captures the framebuffer; Cage/Chromium paths remain unchanged.
 
 Passing the labwc screenshot test does **not** certify that a hostile process cannot open a Wayland surface, and the graphical CI does not yet test a second child window. These must remain security blockers until compositor-enforced process/surface policy and live tests exist.
+
+
+### 2026-11-15 — multiwindow framebuffer and policy regression (CI pending)
+
+A new QEMU-only native WebKit fixture explicitly requests two managed views, each with offline HTML. The second child WebKitGTK view is created as a related view, displayed as a separate GTK top-level surface under labwc and has a distinct orange visual marker. The managed-window guest observer must see `SAFEEXAMOS_NATIVE_SEB_CHILD_READY` before it emits a passing serial marker. The host framebuffer checker requires both the existing white/dark/blue launcher signature and a significant number of orange child pixels. Static tests confirm the new marker, related-view construction and that the default exam policy stays single-window. Normal Cage/Chromium and single-window WebKit paths are unchanged. **Result pending the new CI run.**
