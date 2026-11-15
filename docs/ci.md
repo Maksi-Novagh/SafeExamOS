@@ -495,3 +495,9 @@ The kiosk now invokes an unprivileged local browser-mode supervisor from Cage. I
 ### 2026-11-15 — native Linux SEB lab browser foundation (CI pending)
 
 The build now contains a **separate, optional native GTK/WebKit2GTK 4.1 application** rather than altering the existing Smartschool Chromium portal. Pure Python policy tests reject unknown settings, unsafe/non-HTTPS origins, unsupported upload/download privileges and invalid files. `scripts/check-build-tree.sh` invokes `tests/linux-seb-smoke.py` and Python syntax checks; `python3-gi`, `gir1.2-gtk-3.0` and `gir1.2-webkit2-4.1` are explicit Debian packages. A green static check will validate the policy model, not the actual GUI, network behavior or exam security. The application is not autostarted or represented as official Safe Exam Browser.
+
+### 2026-11-15 — native Linux GTK/WebKitGTK graphical regression gate
+
+A new, separate QEMU graphical job boots the same Debian live ISO with the explicit **`safeexamos.native_ci=1`** kernel parameter. This selects the experimental native GTK/WebKitGTK offline page, leaving normal boot on the verified Chromium Smartschool portal. The test waits for a WebKit load-finished marker, captures a framebuffer and rejects black/blank renderings with the existing `verify-framebuffer.py` color signature.
+
+The job is not a full exam-launch or security regression test. It must pass before claiming the native GUI is operational. The existing regular QEMU boot and graphical tests remain unchanged.

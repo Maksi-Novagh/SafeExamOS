@@ -70,6 +70,16 @@ class PolicyTests(unittest.TestCase):
             path.write_text(json.dumps(fixture()), encoding="utf-8")
             self.assertTrue(module.load_config(path).permits("https://exam.example.org/start"))
 
+    def test_native_smoke_is_only_explicit_ci_boot(self):
+        app = (ROOT / "linux-seb/app.py").read_text(encoding="utf-8")
+        session = (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session").read_text(encoding="utf-8")
+        self.assertIn("SAFEEXAMOS_NATIVE_CI", app)
+        self.assertIn("safeexamos.native_ci=1", session)
+        self.assertIn("OFFLINE_SMOKE_HTML", app)
+        self.assertIn("SAFEEXAMOS_NATIVE_SEB_UI_READY", app)
+        self.assertIn("WebKit2.WebContext.new_ephemeral()", app)
+        self.assertNotIn("--no-sandbox", app)
+
     def test_local_addresses_rejected(self):
         for origin in ["https://localhost", "https://127.0.0.1", "https://192.168.0.1",
                        "https://exam.example.org:8443", "http://exam.example.org",

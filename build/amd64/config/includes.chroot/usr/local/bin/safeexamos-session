@@ -41,4 +41,15 @@ echo "SAFEEXAMOS_PREFLIGHT_ASYNC_START"
 echo "SAFEEXAMOS_CAGE_START"
 # Cage supervises the dedicated mode controller; only one Chromium child
 # and one ephemeral browser profile exist at a time.
+# Only QEMU tests booting with this explicit kernel parameter use the native
+# offline page. Normal boot still starts Chromium and the school portal.
+if grep -Eq '(^|[[:space:]])safeexamos.native_ci=1([[:space:]]|$)' /proc/cmdline; then
+  export SAFEEXAMOS_NATIVE_CI=1
+  export WEBKIT_DISABLE_COMPOSITING_MODE=1
+  export WEBKIT_DISABLE_DMABUF_RENDERER=1
+  echo "SAFEEXAMOS_NATIVE_SEB_CI_START"
+  exec cage -d -- /usr/local/bin/safeexamos-linux-seb \
+    --config /usr/share/safeexamos/linux-seb-fixture.json --smoke-ui
+fi
+
 exec cage -d -- /usr/local/bin/safeexamos-browser-supervisor

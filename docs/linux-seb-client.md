@@ -81,3 +81,13 @@ The existing `scripts/check-build-tree.sh` runs these tests. The new executable 
 6. Add SEB Server integration only after an authorized lab assessment system can validate the claimed interfaces.
 
 Until these gates pass, **SafeExamOS is a prototype, not an official or compatible SEB client**.
+
+## Native graphical test in QEMU
+
+The native client now offers a **CI-only offline renderer** selected by the kernel parameter `safeexamos.native_ci=1`, in addition to the application option `--smoke-ui`. Normal live boot remains the existing Chromium/Smartschool portal.
+
+When the explicit parameter is present, the unprivileged Wayland session launches `safeexamos-linux-seb` under Cage instead of the portal supervisor. It loads a fixed in-memory HTML page (no external network and no real exam). The WebKit load-finished callback emits `SAFEEXAMOS_NATIVE_SEB_UI_READY`; a root-owned CI observer passes `SAFEEXAMOS_CI_NATIVE_SEB_OK` to the QEMU serial port. The new `scripts/qemu-native-seb-smoke.sh` captures the framebuffer and rejects a black/blank screen.
+
+The `QEMU native WebKitGTK smoke` Actions job is deliberately separate from the standard four jobs and consumes the already built ISO. **A first green native run is required before declaring the GTK/WebKit application functional in QEMU.** A visual image alone does not validate URL filtering, keyboard lockdown, renderer stability on VMware, SEB compatibility or security.
+
+The laboratory fixture is installed at `/usr/share/safeexamos/linux-seb-fixture.json` and is never used to authenticate a real examination.

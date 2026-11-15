@@ -176,3 +176,5 @@ The November 15 mode-supervisor prototype separates the school portal browser an
 
 
 **Native Linux SEB client (experimental):** a separately packaged GTK 3 / WebKit2GTK 4.1 browser with strict lab-only configuration validation, exact HTTPS-origin allowlisting and in-memory WebKit context has been added. This does **not** replace the existing Smartschool Chromium portal, nor does it claim encrypted `.seb`/SEB Server/BEK/CK or a fully locked examination session. See [Native Linux SEB architecture](docs/linux-seb-client.md).
+
+Native Linux GUI regression (2026-11-15): a separate CI-only QEMU boot path now launches the experimental GTK/WebKitGTK client with a fixed offline page and checks its rendered framebuffer. This does not change the default Chromium Smartschool session or mean SEB interoperability is complete. See [native client](docs/linux-seb-client.md).

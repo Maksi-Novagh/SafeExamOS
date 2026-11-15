@@ -31,6 +31,8 @@ scripts/check-chromium-policy.py
 scripts/render-portals.py
 linux-seb/policy.py
 linux-seb/app.py
+scripts/qemu-native-seb-smoke.sh
+build/amd64/config/includes.chroot/usr/share/safeexamos/linux-seb-fixture.json
 tests/linux-seb-smoke.py
 build/amd64/config/includes.chroot/usr/local/bin/safeexamos-linux-seb
 build/amd64/config/includes.chroot/usr/local/bin/linux_seb_policy.py
