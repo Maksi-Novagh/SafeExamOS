@@ -512,3 +512,7 @@ Passing the labwc screenshot test does **not** certify that a hostile process ca
 ### 2026-11-15 — multiwindow framebuffer and policy regression (CI pending)
 
 A new QEMU-only native WebKit fixture explicitly requests two managed views, each with offline HTML. The second child WebKitGTK view is created as a related view, displayed as a separate GTK top-level surface under labwc and has a distinct orange visual marker. The managed-window guest observer must see `SAFEEXAMOS_NATIVE_SEB_CHILD_READY` before it emits a passing serial marker. The host framebuffer checker requires both the existing white/dark/blue launcher signature and a significant number of orange child pixels. Static tests confirm the new marker, related-view construction and that the default exam policy stays single-window. Normal Cage/Chromium and single-window WebKit paths are unchanged. **Result pending the new CI run.**
+
+## Real popup dispatch test (2026-11-15, CI pending)
+
+A new QEMU WebKit popup allow/deny smoke job tests actual JavaScript window.open dispatch rather than synthetic view creation alone. It requires a blocked external-origin marker, an allowed CI-only about:blank child marker, child load completion, and both blue/orange framebuffer signatures. Normal single-window, Cage, Chromium, and native tests are retained. These fixtures make no real network requests and do not imply broad SEB interoperability.

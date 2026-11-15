@@ -105,3 +105,7 @@ The first implementation supports controlled secondary WebKitGTK browser views i
 ## Next graphics milestone (2026-11-15)
 
 The live QEMU test now aims to prove **two rendered WebKitGTK windows**, not just a labwc process and a main page. The second in-memory fixture uses an explicit CI-only policy override; production lab configurations still default to one window. If the framebuffer and child readiness marker pass, the next tasks are real WebKit `window.open` signal integration, controlled child close/reopen behavior, and OS-enforced Wayland client isolation. Do not mark labwc as a security boundary from a screenshot result.
+
+## WebKit event policy regression (2026-11-15)
+
+An additional QEMU-only regression now exercises WebKit popup decision and create signals with one denied request and one lab-only allowed request. Next engineering gates remain OS-enforced Wayland client confinement, actual assessment-provider compatibility, and signed configuration/import support. A green result must not be interpreted as complete exam lockdown.

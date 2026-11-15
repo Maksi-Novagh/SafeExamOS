@@ -45,6 +45,14 @@ echo "SAFEEXAMOS_CAGE_START"
 # offline page. Normal boot still starts Chromium and the school portal.
 # Explicitly selected experimental stacked-window compositor.
 # Never selected for normal Smartschool or normal Cage boot.
+if grep -Eq '(^|[[:space:]])safeexamos.popups_ci=1([[:space:]]|$)' /proc/cmdline; then
+  export SAFEEXAMOS_NATIVE_CI=1
+  export WEBKIT_DISABLE_COMPOSITING_MODE=1
+  export WEBKIT_DISABLE_DMABUF_RENDERER=1
+  echo "SAFEEXAMOS_WEBKIT_POPUP_CI_START"
+  exec labwc -C /etc/safeexamos/labwc -S "/usr/local/bin/safeexamos-linux-seb --config /usr/share/safeexamos/linux-seb-fixture.json --smoke-ui --smoke-windows --smoke-popups"
+fi
+
 if grep -Eq '(^|[[:space:]])safeexamos.windows_ci=1([[:space:]]|$)' /proc/cmdline; then
   export SAFEEXAMOS_NATIVE_CI=1
   export WEBKIT_DISABLE_COMPOSITING_MODE=1

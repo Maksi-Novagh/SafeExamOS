@@ -52,7 +52,8 @@ h1{font-size:26px}.orange{background:#ed6a17;height:32px;margin:18px 0}
 </main></body></html>"""
 
 
-def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False) -> int:
+def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False,
+               smoke_popups: bool = False) -> int:
     try:
         import gi
         gi.require_version("Gtk", "3.0")
@@ -86,7 +87,19 @@ def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False) -
             self.add(self.web)
 
             if smoke_ui:
-                self.web.load_html(OFFLINE_SMOKE_HTML, "about:blank")
+                html = OFFLINE_SMOKE_HTML
+                if smoke_popups:
+                    # Exercise the actual WebKit window.open/create signal.
+                    # Both URLs are fictitious: the accepted about:blank popup
+                    # receives only in-memory HTML, not a network resource.
+                    script = """<script>
+setTimeout(() => {
+  window.open('https://blocked.invalid/exam', '_blank');
+  window.open('about:blank', '_blank');
+}, 800);
+</script>"""
+                    html = html.replace("</body>", script + "</body>")
+                self.web.load_html(html, "about:blank")
             else:
                 self.web.load_uri(policy.start_url)
 
@@ -127,6 +140,9 @@ def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False) -
             settings.set_enable_developer_extras(False)
             settings.set_enable_javascript(True)
             settings.set_enable_webgl(False)
+            # Automatic JavaScript popups are OFF in normal examinations.
+            # This permissive setting is restricted to the offline CI fixture.
+            settings.set_javascript_can_open_windows_automatically(bool(smoke_popups))
             view.connect("decide-policy", self._decide_policy)
             view.connect("create", self._new_window, record.window_id)
             view.connect("permission-request", self._deny_permission)
@@ -139,9 +155,19 @@ def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False) -
             # A child must have an approved exact HTTPS origin and capacity.
             try:
                 uri = action.get_request().get_uri()
-                record = manager.open_child(parent_id, uri)
+                if smoke_popups and uri == "about:blank":
+                    # The only about:blank exception is in the CI fixture.
+                    # Authorize a synthetic allowed-origin resource, then
+                    # replace the popup content with offline HTML.
+                    record = manager.open_child(
+                        parent_id, "https://exam.example.org/ci-popup")
+                    print("SAFEEXAMOS_NATIVE_SEB_POPUP_CREATE", flush=True)
+                else:
+                    record = manager.open_child(parent_id, uri)
             except (AttributeError, WindowPolicyError, TypeError):
                 print("SAFEEXAMOS_NATIVE_SEB_DENIED_CHILD", file=sys.stderr)
+                if smoke_popups:
+                    print("SAFEEXAMOS_NATIVE_SEB_POPUP_DENIED", flush=True)
                 return None
             view = self._managed_view(record, related_view=_view)
             view.connect("ready-to-show", self._show_child, record)
@@ -149,8 +175,11 @@ def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False) -
             return view
 
         def _show_child(self, view, record):
-            # Real pop-ups are shown only after WebKit emits ready-to-show.
-            self._present_child(view, record)
+            # WebKit specifies that popups are not presented before this
+            # callback. CI content remains fully offline; all normal child
+            # views use WebKit's standard navigation/policy checks.
+            if self._present_child(view, record) is not None and smoke_popups:
+                view.load_html(OFFLINE_CHILD_HTML, "about:blank")
 
         def _present_child(self, view, record):
             if record.window_id not in manager.records:
@@ -208,7 +237,7 @@ def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False) -
                 return
             if view is self.web:
                 print("SAFEEXAMOS_NATIVE_SEB_UI_READY", flush=True)
-                if smoke_windows and not self._ci_child_started:
+                if smoke_windows and not smoke_popups and not self._ci_child_started:
                     self._ci_child_started = True
                     GLib.idle_add(self._open_ci_child)
             elif smoke_windows:
@@ -217,12 +246,14 @@ def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False) -
         def _decide_policy(self, _view, decision, decision_type):
             try:
                 if decision_type == WebKit2.PolicyDecisionType.NEW_WINDOW_ACTION:
-                    # A child WebView is created by the managed create signal.
-                    # This decision is never permission to launch a foreign app.
+                    # Never let the page authorize its own new windows.
                     uri = decision.get_navigation_action().get_request().get_uri()
-                    if policy.allow_secondary_windows and policy.permits(uri):
+                    ci_blank = smoke_popups and uri == "about:blank"
+                    if policy.allow_secondary_windows and (policy.permits(uri) or ci_blank):
                         decision.use()
                     else:
+                        if smoke_popups:
+                            print("SAFEEXAMOS_NATIVE_SEB_POPUP_DENIED", flush=True)
                         decision.ignore()
                     return True
                 if decision_type == WebKit2.PolicyDecisionType.NAVIGATION_ACTION:
@@ -263,6 +294,8 @@ def main(argv=None) -> int:
                         help="CI-only offline WebKitGTK render test; not an examination")
     parser.add_argument("--smoke-windows", action="store_true",
                         help="CI-only second WebKitGTK window fixture; requires --smoke-ui")
+    parser.add_argument("--smoke-popups", action="store_true",
+                        help="CI-only JavaScript window.open/create signal test")
     args = parser.parse_args(argv)
     try:
         policy = load_config(args.config)
@@ -273,11 +306,15 @@ def main(argv=None) -> int:
             raise PolicyError("Offline UI smoke is only available in CI mode")
         if args.smoke_windows and not args.smoke_ui:
             raise PolicyError("Multiwindow CI requires the offline UI fixture")
+        if args.smoke_popups and not (args.smoke_ui and args.smoke_windows):
+            raise PolicyError("Popup fixture requires --smoke-ui and --smoke-windows")
         if args.smoke_windows:
+            # Only a deliberate QEMU CI boot can widen the fixture's policy.
             policy = replace(policy, max_browser_windows=2,
                              allow_secondary_windows=True)
         return run_native(policy, smoke_ui=args.smoke_ui,
-                          smoke_windows=args.smoke_windows)
+                          smoke_windows=args.smoke_windows,
+                          smoke_popups=args.smoke_popups)
     except (PolicyError, RuntimeError) as error:
         print("SAFEEXAMOS_LINUX_SEB_ERROR: " + str(error), file=sys.stderr)
         return 2

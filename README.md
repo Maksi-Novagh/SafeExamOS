@@ -183,3 +183,5 @@ The native Linux port now contains an **experimental managed-window prototype**:
 
 
 A strengthened QEMU multiwindow regression (2026-11-15) now checks for **two real WebKitGTK surfaces** with distinct blue/orange fixture colors and a child-specific readiness marker. This is a pending CI improvement, not proof of complete compositor lockdown. See [native Linux client](docs/linux-seb-client.md).
+
+A seventh opt-in QEMU test now targets native WebKitGTK JavaScript popup allow/deny behavior using offline content and two distinct framebuffer markers. Pending CI verification; not an official SEB-compatible client or secure compositor boundary.

@@ -88,6 +88,26 @@ class ManagedWindowTests(unittest.TestCase):
         self.assertNotIn("allow_secondary_windows", config)
         self.assertFalse(parse_config(config).allow_secondary_windows)
 
+    def test_real_webkit_popup_fixture_is_ci_only(self):
+        app = (BASE / "app.py").read_text(encoding="utf-8")
+        session = (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session").read_text(encoding="utf-8")
+        marker = (ROOT / "build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-ui-marker").read_text(encoding="utf-8")
+        runner = (ROOT / "scripts/qemu-native-seb-smoke.sh").read_text(encoding="utf-8")
+        workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        self.assertIn("window.open('about:blank'", app)
+        self.assertIn("window.open('https://blocked.invalid/exam'", app)
+        self.assertIn("SAFEEXAMOS_NATIVE_SEB_POPUP_CREATE", app)
+        self.assertIn("SAFEEXAMOS_NATIVE_SEB_POPUP_DENIED", app)
+        self.assertIn("set_javascript_can_open_windows_automatically(bool(smoke_popups))", app)
+        self.assertIn("if args.smoke_popups and not (args.smoke_ui and args.smoke_windows)", app)
+        self.assertIn("safeexamos.popups_ci=1", session)
+        self.assertIn("--smoke-windows --smoke-popups", session)
+        self.assertIn("SAFEEXAMOS_CI_WEBKIT_POPUPS_OK", marker)
+        self.assertIn("safeexamos.popups_ci=1", runner)
+        self.assertIn("qemu-webkit-popups:", workflow)
+        # No user-provided exam profile may silently enable popups.
+        self.assertFalse(parse_config(fixture()).allow_secondary_windows)
+
     def test_no_arbitrary_program_spawn_or_desktop_launcher(self):
         config_path = ROOT / "build/amd64/config/includes.chroot/etc/safeexamos/labwc/rc.xml"
         root = ET.parse(config_path).getroot()

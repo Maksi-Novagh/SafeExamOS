@@ -110,3 +110,7 @@ The prior six-job green run #55 verified that labwc could render the main WebKit
 The graphical observer only emits `SAFEEXAMOS_CI_MANAGED_WINDOWS_OK` after the second WebKit load-finished event (`SAFEEXAMOS_NATIVE_SEB_CHILD_READY`). The host's PPM checker must detect the blue primary page **and** a substantial orange area unique to the second page. Merely starting labwc and one WebKit process is no longer sufficient. A default production config still rejects all secondary windows; this two-window permission is injected only into the explicitly opted-in CI fixture. No network calls or real examination content are involved.
 
 This demonstrates basic stacked native WebKit windows when it passes, not OS-enforced prevention of unauthorized Wayland clients, real web popup signals, or a secure exam deployment. The next test gate is an untrusted-popup request against controlled local content, then compositor-level client isolation.
+
+## Live JavaScript popup regression (2026-11-15)
+
+A seventh QEMU job uses safeexamos.popups_ci=1 to issue real WebKitGTK window.open calls from an offline page. An unrelated HTTPS URL should be refused, while an about:blank popup is permitted only within this explicitly opted-in CI mode and receives offline orange HTML. The observer requires popup rejection, child creation, and child load events; framebuffer evidence must contain both the primary blue view and orange secondary window. This does not grant production exam pages automatic popup permissions or certify compositor confinement. CI validation is pending.

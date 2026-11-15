@@ -41,7 +41,10 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-if [ "${NATIVE_KERNEL_FLAG:-}" = "safeexamos.windows_ci=1" ]; then
+if [ "${NATIVE_KERNEL_FLAG:-}" = "safeexamos.popups_ci=1" ]; then
+  MARKER=SAFEEXAMOS_CI_WEBKIT_POPUPS_OK
+  FRAME_CHECK="--managed-child"
+elif [ "${NATIVE_KERNEL_FLAG:-}" = "safeexamos.windows_ci=1" ]; then
   MARKER=SAFEEXAMOS_CI_MANAGED_WINDOWS_OK
   FRAME_CHECK="--managed-child"
 else

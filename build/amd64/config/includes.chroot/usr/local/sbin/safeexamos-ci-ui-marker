@@ -8,7 +8,16 @@ reported=0
 while [ "$(date +%s)" -lt "$deadline" ]; do
   # Native WebKitGTK has a separate QEMU boot flag and process marker.
   # The guest emits this only after the WebKit load-finished callback.
-  if ! grep -Fq 'safeexamos.windows_ci=1' /proc/cmdline && journalctl -b -u safeexamos-kiosk.service --no-pager -n 35 2>/dev/null \
+  if grep -Fq 'safeexamos.popups_ci=1' /proc/cmdline; then
+    logs=$(journalctl -b -u safeexamos-kiosk.service --no-pager -n 160 2>/dev/null || true)
+    if printf '%s\n' "$logs" | grep -Fq 'SAFEEXAMOS_NATIVE_SEB_POPUP_CREATE' &&
+       printf '%s\n' "$logs" | grep -Fq 'SAFEEXAMOS_NATIVE_SEB_CHILD_READY' &&
+       printf '%s\n' "$logs" | grep -Fq 'SAFEEXAMOS_NATIVE_SEB_POPUP_DENIED'; then
+      printf '%s\n' 'SAFEEXAMOS_CI_WEBKIT_POPUPS_OK' > /dev/ttyS0 2>/dev/null || true
+      exit 0
+    fi
+  fi
+  if ! grep -Eq 'safeexamos.(windows|popups)_ci=1' /proc/cmdline && journalctl -b -u safeexamos-kiosk.service --no-pager -n 35 2>/dev/null \
       | grep -Fq 'SAFEEXAMOS_NATIVE_SEB_UI_READY'; then
     printf '%s\n' 'SAFEEXAMOS_CI_NATIVE_SEB_OK' > /dev/ttyS0 2>/dev/null || true
     exit 0
