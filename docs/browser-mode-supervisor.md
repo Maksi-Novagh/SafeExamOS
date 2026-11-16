@@ -43,3 +43,9 @@ An explicit kernel argument `safeexamos.native_supervisor_lab=1` enables an expe
 **This remains a developer-only integration test, not a secure assessment flow:** the bundled JSON is an unsigned fixture, keyboard/compositor escape controls are incomplete, and the mode does not authenticate an exam or support SEB Server. The static/HTTP tests cover authorization and state transitions; a QEMU interactive transition and real WebKit shutdown must still be tested before calling the full graphical handoff verified. Rollback: boot without the flag or revert these changes.
 
 The supervised native lab page is loaded from in-memory offline HTML rather than navigating to the fixture's fictitious HTTPS start URL; this prevents an unintended network request during the integration demonstration. It does not constitute an exam delivery path.
+
+## QEMU native handoff and cleanup regression (2026-11-16)
+
+A dedicated opt-in QEMU kernel flag, `safeexamos.native_handoff_ci=1`, runs a deterministic portal-to-native transition without real credentials. The unprivileged supervisor terminates Chromium, checks that the removed profile path no longer exists, launches the offline GTK/WebKit lab, then observes its controlled exit. The integration fixture records named transition and cleanup markers; a dedicated GitHub Actions job checks them, plus the captured display framebuffer. The supervisor no longer dereferences a cleared process handle when testing the native exit status.
+
+This test verifies supervisor-controlled termination and profile-directory deletion, **not** provable erasure of bytes on storage, compositor-wide client isolation, or secure examination delivery. A successful test cannot certify the resistance of the Wayland compositor to another same-UID process. Without the explicit boot flag, the default Smartschool/DEMO boot path remains unchanged.
