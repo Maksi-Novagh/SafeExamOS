@@ -30,12 +30,15 @@ def send_wayland_fd(channel: socket.socket, connected_socket: socket.socket) -> 
 
 
 def receive_wayland_fd(channel: socket.socket) -> int:
-    """Receive exactly one connected stream descriptor, never an arbitrary path."""
-    if channel.family != socket.AF_UNIX:
-        raise HandoffError("Invalid transport family")
+    """Receive one Unix stream descriptor and close every rejected descriptor."""
+    if channel.family != socket.AF_UNIX or channel.getsockopt(
+        socket.SOL_SOCKET, socket.SO_TYPE
+    ) != socket.SOCK_STREAM:
+        raise HandoffError("Invalid transport")
     width = array.array("i").itemsize
     data, anc, flags, _ = channel.recvmsg(1, socket.CMSG_SPACE(width * 2))
     fds: list[int] = []
+    accepted = None
     try:
         for level, kind, raw in anc:
             if level == socket.SOL_SOCKET and kind == socket.SCM_RIGHTS:
@@ -45,26 +48,25 @@ def receive_wayland_fd(channel: socket.socket) -> int:
         if data != b"W" or flags & (socket.MSG_CTRUNC | socket.MSG_TRUNC) or len(fds) != 1:
             raise HandoffError("Expected exactly one Wayland descriptor")
         fd = fds[0]
-        # Do not permit unexpected device/file descriptors through this channel.
-        client = socket.socket(fileno=fd)
+        candidate = socket.socket(fileno=fd)
         try:
-            if client.family != socket.AF_UNIX or client.getsockopt(
+            if candidate.family != socket.AF_UNIX or candidate.getsockopt(
                 socket.SOL_SOCKET, socket.SO_TYPE
             ) != socket.SOCK_STREAM:
                 raise HandoffError("Received descriptor is not a Unix stream socket")
             os.set_inheritable(fd, False)
-            return client.detach()
+            accepted = candidate.detach()
+            return accepted
         finally:
-            client.close()
+            # If validation fails, socket wrapper closes its rejected fd.
+            candidate.close()
     except (OSError, ValueError) as exc:
         if isinstance(exc, HandoffError):
             raise
         raise HandoffError("Invalid transferred socket") from exc
     finally:
-        # Ownership of exactly one validated descriptor transfers to caller.
-        # On failures ensure every extracted descriptor is closed.
-        if "fd" not in locals() or (data != b"W" or flags & (socket.MSG_CTRUNC | socket.MSG_TRUNC) or len(fds) != 1):
-            for item in fds:
+        for item in fds:
+            if item != accepted:
                 try:
                     os.close(item)
                 except OSError:
