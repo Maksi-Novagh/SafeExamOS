@@ -108,6 +108,16 @@ class SupervisorTests(unittest.TestCase):
         self.assertEqual(sup.native_lab_arguments()[-1], "--supervised-lab")
         self.assertNotIn("--no-sandbox", sup.native_lab_arguments())
 
+    def test_native_exit_code_and_profile_cleanup_regression(self):
+        source = BINARY.read_text()
+        self.assertIn("exit_code = process.returncode", source)
+        self.assertIn('if profile.exists():', source)
+        self.assertIn('if target is None and mode == "native-lab" and exit_code == 0:', source)
+        self.assertIn("SAFEEXAMOS_NATIVE_HANDOFF_CI_COMPLETE", source)
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ValueError):
+                sup.browser_arguments("native-lab", Path(tmp))
+
     def test_unexpected_transition_rejected(self):
         self.assertEqual(self.transition("finish-demo"), 409)
         self.assertIsNone(self.controller.consume_pending())
