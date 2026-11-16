@@ -146,6 +146,15 @@ class ManagedWindowTests(unittest.TestCase):
         self.assertFalse(registry.close(child.window_id))
         self.assertEqual(list(registry.records), [main.window_id])
 
+    def test_supervised_lab_is_explicit_and_packaged(self):
+        app = (BASE / "app.py").read_text(encoding="utf-8")
+        packaged = (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/safeexamos-linux-seb").read_text(encoding="utf-8")
+        self.assertEqual(app, packaged)
+        self.assertIn("--supervised-lab", app)
+        self.assertIn("SAFEEXAMOS_NATIVE_SUPERVISOR_LAB", app)
+        self.assertIn("End experimental lab session", app)
+        self.assertIn("safeexamos.native_supervisor_lab=1", (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session").read_text())
+
     def test_no_arbitrary_program_spawn_or_desktop_launcher(self):
         config_path = ROOT / "build/amd64/config/includes.chroot/etc/safeexamos/labwc/rc.xml"
         root = ET.parse(config_path).getroot()
