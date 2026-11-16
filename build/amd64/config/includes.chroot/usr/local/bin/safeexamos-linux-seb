@@ -68,6 +68,7 @@ def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False,
     manager = ManagedWindows(policy)
     main_record = manager.open_main()
     secondary_windows = {}
+    renderer_failed = {"value": False}
 
     class ExamWindow(Gtk.Window):
         def __init__(self):
@@ -148,6 +149,7 @@ setTimeout(() => {
             view.connect("permission-request", self._deny_permission)
             view.connect("context-menu", self._deny_context_menu)
             view.connect("load-changed", self._load_changed)
+            view.connect("web-process-terminated", self._renderer_terminated, record.window_id)
             return view
 
         def _new_window(self, _view, action, parent_id):
@@ -193,6 +195,8 @@ setTimeout(() => {
             child.set_modal(False)
             child.connect("key-press-event", self._intercept_keys)
             child.connect("delete-event", lambda *_: self._close_child(view, record.window_id))
+            # Cleanup also occurs on compositor-initiated widget destruction.
+            child.connect("destroy", lambda *_: self._close_child(view, record.window_id))
             child.add(view)
             secondary_windows[record.window_id] = child
             child.show_all()
@@ -217,15 +221,30 @@ setTimeout(() => {
 
         def _close_child(self, _view, window_id):
             try:
-                manager.close(window_id)
+                if not manager.close(window_id):
+                    return True  # Repeated WebKit/GTK close signals are harmless.
             except WindowPolicyError:
                 return True
             child = secondary_windows.pop(window_id, None)
             if child is not None:
-                child.hide()
                 child.destroy()
             print("SAFEEXAMOS_NATIVE_SEB_CHILD_CLOSED", flush=True)
             return True
+
+        def _renderer_terminated(self, _view, reason, window_id):
+            # Never silently restore an exam renderer: its previous page
+            # and submission state cannot be assumed to be intact.
+            if window_id == main_record.window_id:
+                renderer_failed["value"] = True
+                print("SAFEEXAMOS_NATIVE_SEB_MAIN_RENDERER_FAILED", file=sys.stderr, flush=True)
+                manager.clear()
+                for child in list(secondary_windows.values()):
+                    child.destroy()
+                secondary_windows.clear()
+                Gtk.main_quit()
+            else:
+                print("SAFEEXAMOS_NATIVE_SEB_CHILD_RENDERER_FAILED", file=sys.stderr, flush=True)
+                self._close_child(_view, window_id)
 
         @staticmethod
         def _deny_permission(_view, request):
@@ -281,7 +300,7 @@ setTimeout(() => {
     win = ExamWindow()
     win.show_all()
     Gtk.main()
-    return 0
+    return 2 if renderer_failed["value"] else 0
 
 
 def main(argv=None) -> int:
