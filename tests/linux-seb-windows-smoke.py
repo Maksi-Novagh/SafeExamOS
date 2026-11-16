@@ -153,6 +153,7 @@ class ManagedWindowTests(unittest.TestCase):
         self.assertIn("--supervised-lab", app)
         self.assertIn("SAFEEXAMOS_NATIVE_SUPERVISOR_LAB", app)
         self.assertIn("End experimental lab session", app)
+        self.assertIn('self.web.load_html(OFFLINE_SMOKE_HTML, "about:blank")', app)
         self.assertIn("safeexamos.native_supervisor_lab=1", (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session").read_text())
 
     def test_no_arbitrary_program_spawn_or_desktop_launcher(self):
