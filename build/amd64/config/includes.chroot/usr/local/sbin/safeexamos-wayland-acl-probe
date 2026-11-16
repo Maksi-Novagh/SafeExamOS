@@ -54,9 +54,16 @@ def main():
             info = path.lstat()
             if info.st_uid != exam.pw_uid:
                 continue
-            if attempt(path, "exam") and not attempt(path, "nobody"):
+            # A separate process with the same exam UID is intentionally
+            # able to connect today. Record that vulnerability as evidence
+            # until a separate-UID or compositor client-auth design exists.
+            legitimate = attempt(path, "exam")
+            other_uid_blocked = not attempt(path, "nobody")
+            same_uid_untrusted_can_connect = attempt(path, "exam")
+            if legitimate and other_uid_blocked and same_uid_untrusted_can_connect:
                 print("SAFEEXAMOS_WAYLAND_ACL_EXAM_ALLOWED", flush=True)
                 print("SAFEEXAMOS_WAYLAND_ACL_OUTSIDER_DENIED", flush=True)
+                print("SAFEEXAMOS_WAYLAND_SAME_UID_GAP_CONFIRMED", flush=True)
                 return 0
         return 1
     except (OSError, KeyError):
