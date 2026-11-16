@@ -41,7 +41,10 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-if [ "${NATIVE_KERNEL_FLAG:-}" = "safeexamos.native_handoff_ci=1" ]; then
+if [ "${NATIVE_KERNEL_FLAG:-}" = "safeexamos.wayland_acl_ci=1" ]; then
+  MARKER=SAFEEXAMOS_CI_WAYLAND_ACL_OK
+  FRAME_CHECK=""
+elif [ "${NATIVE_KERNEL_FLAG:-}" = "safeexamos.native_handoff_ci=1" ]; then
   MARKER=SAFEEXAMOS_CI_NATIVE_HANDOFF_OK
   FRAME_CHECK=""
 elif [ "${NATIVE_KERNEL_FLAG:-}" = "safeexamos.popups_ci=1" ]; then
