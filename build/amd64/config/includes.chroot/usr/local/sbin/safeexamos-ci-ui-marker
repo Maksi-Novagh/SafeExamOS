@@ -8,6 +8,12 @@ reported=0
 while [ "$(date +%s)" -lt "$deadline" ]; do
   # Native WebKitGTK has a separate QEMU boot flag and process marker.
   # The guest emits this only after the WebKit load-finished callback.
+  if grep -Fq 'safeexamos.wayland_acl_ci=1' /proc/cmdline; then
+    if python3 /usr/local/sbin/safeexamos-wayland-acl-probe; then
+      printf '%s\n' 'SAFEEXAMOS_CI_WAYLAND_ACL_OK' > /dev/ttyS0 2>/dev/null || true
+      exit 0
+    fi
+  fi
   if grep -Fq 'safeexamos.native_handoff_ci=1' /proc/cmdline; then
     logs=$(journalctl -b -u safeexamos-kiosk.service --no-pager -n 250 2>/dev/null || true)
     if printf '%s\n' "$logs" | grep -Fq 'SAFEEXAMOS_BROWSER_TRANSITION=portal-to-native-lab' &&
