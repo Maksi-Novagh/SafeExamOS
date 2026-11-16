@@ -164,6 +164,17 @@ class ManagedWindowTests(unittest.TestCase):
         self.assertIn("safeexamos.native_handoff_ci=1", session)
         self.assertIn("SAFEEXAMOS_CI_NATIVE_HANDOFF_OK", marker)
 
+    def test_cross_uid_wayland_probe_is_opt_in_and_checks_both_sides(self):
+        probe = (ROOT / "build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-wayland-acl-probe").read_text()
+        observer = (ROOT / "build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-ui-marker").read_text()
+        session = (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session").read_text()
+        workflow = (ROOT / ".github/workflows/ci.yml").read_text()
+        self.assertIn('attempt(path, "exam") and not attempt(path, "nobody")', probe)
+        self.assertIn('stat.S_IMODE(root_stat.st_mode) != 0o700', probe)
+        self.assertIn('SAFEEXAMOS_CI_WAYLAND_ACL_OK', observer)
+        self.assertIn('safeexamos.wayland_acl_ci=1', session)
+        self.assertIn('qemu-wayland-acl:', workflow)
+
     def test_no_arbitrary_program_spawn_or_desktop_launcher(self):
         config_path = ROOT / "build/amd64/config/includes.chroot/etc/safeexamos/labwc/rc.xml"
         root = ET.parse(config_path).getroot()
