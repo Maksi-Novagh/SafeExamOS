@@ -7,6 +7,7 @@ required="
 build/amd64/build.sh
 build/amd64/config/package-lists/safeexamos.list.chroot
 build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session
+build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-wayland-acl-probe
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-preflight
 build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-seat-ready
 build/amd64/config/includes.chroot/etc/systemd/system/seatd.service.d/10-safeexamos.conf
@@ -142,7 +143,7 @@ node ./tests/portal-browser-smoke.cjs
 python3 ./tests/session-supervisor-smoke.py
 python3 ./tests/linux-seb-smoke.py
 python3 ./tests/linux-seb-windows-smoke.py
-python3 -m py_compile ./linux-seb/app.py ./linux-seb/policy.py ./linux-seb/windows.py
+python3 -m py_compile ./linux-seb/app.py ./linux-seb/policy.py ./linux-seb/windows.py ./build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-wayland-acl-probe
 sh ./tests/preflight-smoke.sh
 python3 -m py_compile ./scripts/verify-framebuffer.py
 
