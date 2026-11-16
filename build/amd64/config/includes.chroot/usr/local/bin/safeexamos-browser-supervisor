@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """SafeExamOS local portal/demo supervisor (prototype, not SEB lockdown).
 
-Only two modes exist: pre-exam portal and offline demonstration.
+Two normal modes exist: pre-exam portal and offline demonstration.
+An opt-in lab flag also allows an experimental native WebKitGTK session.
 A loopback-only local UI and an authenticated state transition ensure that
 portal and demonstration Chromium profiles never run at the same time.
 
@@ -27,11 +28,13 @@ from urllib.parse import urlsplit
 HOST = "127.0.0.1"
 PORT = 38652
 ORIGIN = f"http://{HOST}:{PORT}"
-SUPPORTED_MODES = {"portal", "demo"}
+SUPPORTED_MODES = {"portal", "demo", "native-lab"}
+NATIVE_LAB_ENABLED = os.environ.get("SAFEEXAMOS_NATIVE_SUPERVISOR_LAB") == "1"
 ALLOWED = {
     "portal": frozenset({"index.html", "preflight.js", "portals.js",
                          "portal-browser.js", "transition.js"}),
     "demo": frozenset({"demo.html", "demo-exam.js", "transition.js"}),
+    "native-lab": frozenset(),
 }
 CONTENT_TYPES = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8"}
 
@@ -39,7 +42,8 @@ class TransitionError(ValueError):
     pass
 
 class Controller:
-    def __init__(self):
+    def __init__(self, native_lab_enabled: bool = NATIVE_LAB_ENABLED):
+        self.native_lab_enabled = native_lab_enabled
         self.mode = "portal"
         self.pending = None
         self.token = secrets.token_urlsafe(32)
@@ -51,11 +55,20 @@ class Controller:
         with self.lock:
             if not hmac.compare_digest(self.token, supplied_token):
                 raise TransitionError("Incorrect transition token")
-            expected = {"portal": ("start-demo", "demo"),
-                        "demo": ("finish-demo", "portal")}[self.mode]
-            if self.pending is not None or action != expected[0]:
+            transitions = {"portal": {"start-demo": "demo"},
+                           "demo": {"finish-demo": "portal"},
+                           "native-lab": {}}
+            if self.native_lab_enabled:
+                transitions["portal"]["start-native-lab"] = "native-lab"
+            if self.pending is not None or action not in transitions[self.mode]:
                 raise TransitionError("Invalid session transition")
-            self.pending = expected[1]
+            self.pending = transitions[self.mode][action]
+
+    def finish_native_lab(self) -> None:
+        with self.lock:
+            if not self.native_lab_enabled or self.mode != "native-lab" or self.pending is not None:
+                raise TransitionError("No active native laboratory session")
+            self.pending = "portal"
 
     def consume_pending(self) -> str | None:
         with self.lock:
@@ -129,7 +142,8 @@ class AppHandler(http.server.BaseHTTPRequestHandler):
         if url.path == "/favicon.ico":
             return self._reject(404)
         if url.path == "/api/status":
-            data = json.dumps({"mode": self.server.controller.mode},
+            data = json.dumps({"mode": self.server.controller.mode,
+                               "native_lab_enabled": self.server.controller.native_lab_enabled},
                               separators=(",", ":")).encode("utf-8")
             return self._send(data, "application/json; charset=utf-8")
         if not url.path.startswith("/launcher/"):
@@ -199,6 +213,9 @@ def browser_arguments(mode: str, runtime: Path, browser: str = "/usr/bin/chromiu
         f"--user-data-dir={profile}",
     ]
 
+def native_lab_arguments(config: str = "/usr/share/safeexamos/linux-seb-fixture.json") -> list[str]:
+    return ["/usr/local/bin/safeexamos-linux-seb", "--config", config, "--supervised-lab"]
+
 def dispose_browser(process: subprocess.Popen, profile: Path):
     # Chromium launches helpers in the same dedicated process group.
     if process.poll() is None:
@@ -234,7 +251,8 @@ def run() -> int:
             mode = controller.mode
             profile = profiles / mode
             profile.mkdir(mode=0o700)
-            cmd = browser_arguments(mode, runtime)
+            cmd = (native_lab_arguments() if mode == "native-lab"
+                   else browser_arguments(mode, runtime))
             print("SAFEEXAMOS_BROWSER_MODE=" + mode, flush=True)
             process = subprocess.Popen(cmd, start_new_session=True)
             while process.poll() is None and controller.consume_pending() is None:
@@ -242,8 +260,11 @@ def run() -> int:
             target = controller.consume_pending()
             dispose_browser(process, profile)
             process = None
+            if target is None and mode == "native-lab" and process.returncode == 0:
+                controller.finish_native_lab()
+                target = controller.consume_pending()
             if target is None:
-                raise RuntimeError("Chromium exited unexpectedly in mode " + mode)
+                raise RuntimeError("Browser exited unexpectedly in mode " + mode)
             controller.complete(target)
             print(f"SAFEEXAMOS_BROWSER_TRANSITION={mode}-to-{target}", flush=True)
     finally:
