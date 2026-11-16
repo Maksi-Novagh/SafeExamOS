@@ -96,7 +96,11 @@ def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False,
             else:
                 self.add(self.web)
 
-            if smoke_ui:
+            if supervised_lab:
+                # The lab handoff must never navigate to the fictional
+                # HTTPS origin from the unsigned bundled fixture.
+                self.web.load_html(OFFLINE_SMOKE_HTML, "about:blank")
+            elif smoke_ui:
                 html = OFFLINE_SMOKE_HTML
                 if smoke_popups:
                     # Exercise the actual WebKit window.open/create signal.
