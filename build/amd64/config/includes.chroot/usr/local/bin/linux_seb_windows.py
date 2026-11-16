@@ -36,8 +36,13 @@ class ManagedWindows:
         return record
 
     def open_child(self, parent_id: int, target: str) -> WindowRecord:
-        if parent_id not in self.records:
+        # Only the primary exam WebView may request additional windows.
+        # This prevents a child popup from creating an unbounded tree and
+        # avoids orphaned descendants when a child is closed.
+        if type(parent_id) is not int or parent_id not in self.records:
             raise WindowPolicyError("Unmanaged parent window")
+        if self.records[parent_id].role != "main":
+            raise WindowPolicyError("Only the main exam window can open children")
         if not self.policy.allow_secondary_windows:
             raise WindowPolicyError("Secondary browser windows disabled")
         if len(self.records) >= self.policy.max_browser_windows:
