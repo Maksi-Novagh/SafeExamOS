@@ -312,6 +312,11 @@ setTimeout(() => {
 
     win = ExamWindow()
     win.show_all()
+    if supervised_lab and os.environ.get("SAFEEXAMOS_NATIVE_HANDOFF_CI") == "1":
+        # QEMU integration fixture: prove native process started and exited
+        # normally without human interaction. Never used by normal boot.
+        print("SAFEEXAMOS_NATIVE_HANDOFF_CI_READY", flush=True)
+        GLib.timeout_add_seconds(3, lambda: (Gtk.main_quit(), False)[1])
     Gtk.main()
     return 2 if renderer_failed["value"] else 0
 
