@@ -156,6 +156,14 @@ class ManagedWindowTests(unittest.TestCase):
         self.assertIn('self.web.load_html(OFFLINE_SMOKE_HTML, "about:blank")', app)
         self.assertIn("safeexamos.native_supervisor_lab=1", (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session").read_text())
 
+    def test_native_handoff_ci_is_explicit(self):
+        app = (BASE / "app.py").read_text(encoding="utf-8")
+        session = (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/safeexamos-session").read_text()
+        marker = (ROOT / "build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-ci-ui-marker").read_text()
+        self.assertIn("SAFEEXAMOS_NATIVE_HANDOFF_CI_READY", app)
+        self.assertIn("safeexamos.native_handoff_ci=1", session)
+        self.assertIn("SAFEEXAMOS_CI_NATIVE_HANDOFF_OK", marker)
+
     def test_no_arbitrary_program_spawn_or_desktop_launcher(self):
         config_path = ROOT / "build/amd64/config/includes.chroot/etc/safeexamos/labwc/rc.xml"
         root = ET.parse(config_path).getroot()
