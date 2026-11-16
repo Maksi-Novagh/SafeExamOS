@@ -56,6 +56,25 @@ class ManagedWindowTests(unittest.TestCase):
         m.clear()
         self.assertEqual(len(m.records), 0)
 
+    def test_child_cannot_spawn_grandchildren_or_use_boolean_parent(self):
+        policy = parse_config(fixture(max_browser_windows=3, allow_secondary_windows=True))
+        windows = ManagedWindows(policy)
+        main = windows.open_main()
+        child = windows.open_child(main.window_id, "https://exam.example.org/resource")
+        for parent in (child.window_id, True, False, 999):
+            with self.subTest(parent=parent), self.assertRaises(WindowPolicyError):
+                windows.open_child(parent, "https://exam.example.org/next")
+        self.assertEqual(len(windows.records), 2)
+        self.assertTrue(windows.close(child.window_id))
+        reopened = windows.open_child(main.window_id, "https://exam.example.org/resource")
+        self.assertGreater(reopened.window_id, child.window_id)
+        self.assertEqual(reopened.parent_id, main.window_id)
+
+    def test_packaged_window_policy_matches_source(self):
+        packaged = (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/linux_seb_windows.py").read_bytes()
+        source = (BASE / "windows.py").read_bytes()
+        self.assertEqual(packaged, source, "ISO window policy must not drift from tested source")
+
     def test_mismatched_multiwindow_fields_fail(self):
         bad = [
             fixture(max_browser_windows=2),
