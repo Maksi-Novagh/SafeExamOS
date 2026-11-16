@@ -53,7 +53,7 @@ h1{font-size:26px}.orange{background:#ed6a17;height:32px;margin:18px 0}
 
 
 def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False,
-               smoke_popups: bool = False) -> int:
+               smoke_popups: bool = False, supervised_lab: bool = False) -> int:
     try:
         import gi
         gi.require_version("Gtk", "3.0")
@@ -85,7 +85,16 @@ def run_native(policy, *, smoke_ui: bool = False, smoke_windows: bool = False,
             self.context.connect("download-started", self._reject_download)
             self.context.set_cache_model(WebKit2.CacheModel.DOCUMENT_VIEWER)
             self.web = self._managed_view(main_record)
-            self.add(self.web)
+            if supervised_lab:
+                # Trusted local GTK control; remote exam content cannot trigger it.
+                layout = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+                exit_button = Gtk.Button(label="End experimental lab session")
+                exit_button.connect("clicked", lambda *_: Gtk.main_quit())
+                layout.pack_start(exit_button, False, False, 0)
+                layout.pack_start(self.web, True, True, 0)
+                self.add(layout)
+            else:
+                self.add(self.web)
 
             if smoke_ui:
                 html = OFFLINE_SMOKE_HTML
@@ -315,6 +324,8 @@ def main(argv=None) -> int:
                         help="CI-only second WebKitGTK window fixture; requires --smoke-ui")
     parser.add_argument("--smoke-popups", action="store_true",
                         help="CI-only JavaScript window.open/create signal test")
+    parser.add_argument("--supervised-lab", action="store_true",
+                        help="Opt-in local native lab with an explicit GTK exit control")
     args = parser.parse_args(argv)
     try:
         policy = load_config(args.config)
@@ -331,9 +342,14 @@ def main(argv=None) -> int:
             # Only a deliberate QEMU CI boot can widen the fixture's policy.
             policy = replace(policy, max_browser_windows=2,
                              allow_secondary_windows=True)
+        if args.supervised_lab and (args.smoke_ui or args.smoke_windows or args.smoke_popups):
+            raise PolicyError("Supervised lab cannot combine with CI smoke modes")
+        if args.supervised_lab and os.environ.get("SAFEEXAMOS_NATIVE_SUPERVISOR_LAB") != "1":
+            raise PolicyError("Native supervised lab requires explicit boot opt-in")
         return run_native(policy, smoke_ui=args.smoke_ui,
                           smoke_windows=args.smoke_windows,
-                          smoke_popups=args.smoke_popups)
+                          smoke_popups=args.smoke_popups,
+                          supervised_lab=args.supervised_lab)
     except (PolicyError, RuntimeError) as error:
         print("SAFEEXAMOS_LINUX_SEB_ERROR: " + str(error), file=sys.stderr)
         return 2
