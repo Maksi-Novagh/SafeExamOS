@@ -68,3 +68,9 @@ The defensive threat catalog in `docs/escape-and-cheating-catalog.md` remains th
 ## 2026-11-13 QEMU evidence
 
 [Run #42](https://github.com/Maksi-Novagh/SafeExamOS/actions/runs/43408402740) passed the graphical smoke and captured a framebuffer after the seatd correction. It **does not** validate the shortcut restrictions, TTY escape resistance, storage erasure, device hotplug or physical hardware.
+
+## 2026-11-16 — Wayland cross-UID confinement regression
+
+The kiosk service already owns a private systemd `RuntimeDirectory=safeexamos-exam` with mode `0700`, running as the unprivileged `exam` UID. A dedicated opt-in QEMU regression with `safeexamos.wayland_acl_ci=1` now tests the *actual* Wayland Unix-domain socket: the authorized `exam` UID must connect, while an unrelated `nobody` UID must fail. The probe also rejects a runtime directory with the wrong owner or permissions. The CI check requires both the socket marker and a visible graphical framebuffer, rather than trusting a static configuration check.
+
+**Threat-model scope:** cross-UID filesystem/DAC isolation only. A same-UID process can still open that socket; neither Cage nor labwc is an authenticated per-client broker. Root, malicious exam-UID processes, compromised browser processes, kernel attacks and compositor shortcuts remain outside this test. This must not be described as complete Wayland confinement. Rollback: remove the opt-in test hook and CI job without changing the normal kiosk service.
