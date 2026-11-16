@@ -196,8 +196,8 @@ class AppHandler(http.server.BaseHTTPRequestHandler):
         self._reject(403)
 
 def browser_arguments(mode: str, runtime: Path, browser: str = "/usr/bin/chromium") -> list[str]:
-    if mode not in SUPPORTED_MODES:
-        raise ValueError("Unrecognized browser mode")
+    if mode not in ("portal", "demo"):
+        raise ValueError("Unrecognized Chromium mode")
     page = "index.html" if mode == "portal" else "demo.html"
     profile = runtime / "profiles" / mode
     return [
@@ -241,6 +241,8 @@ def run() -> int:
     profiles.mkdir(mode=0o700, exist_ok=True)
     for name in SUPPORTED_MODES:
         shutil.rmtree(profiles / name, ignore_errors=True)
+    if os.environ.get("SAFEEXAMOS_NATIVE_HANDOFF_CI") == "1" and not NATIVE_LAB_ENABLED:
+        raise RuntimeError("Native handoff CI requires the explicit laboratory boot flag")
     controller = Controller()
     server = LocalAppServer((HOST, PORT), app, controller)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -255,18 +257,28 @@ def run() -> int:
                    else browser_arguments(mode, runtime))
             print("SAFEEXAMOS_BROWSER_MODE=" + mode, flush=True)
             process = subprocess.Popen(cmd, start_new_session=True)
+            if mode == "portal" and os.environ.get("SAFEEXAMOS_NATIVE_HANDOFF_CI") == "1":
+                # Only the isolated QEMU fixture requests a native transition.
+                controller.request("start-native-lab", controller.token)
             while process.poll() is None and controller.consume_pending() is None:
                 time.sleep(0.15)
             target = controller.consume_pending()
             dispose_browser(process, profile)
+            exit_code = process.returncode
             process = None
-            if target is None and mode == "native-lab" and process.returncode == 0:
+            if profile.exists():
+                raise RuntimeError("Temporary browser profile was not deleted")
+            print(f"SAFEEXAMOS_BROWSER_DISPOSED={mode}", flush=True)
+            if target is None and mode == "native-lab" and exit_code == 0:
                 controller.finish_native_lab()
                 target = controller.consume_pending()
             if target is None:
                 raise RuntimeError("Browser exited unexpectedly in mode " + mode)
             controller.complete(target)
             print(f"SAFEEXAMOS_BROWSER_TRANSITION={mode}-to-{target}", flush=True)
+            if mode == "native-lab" and os.environ.get("SAFEEXAMOS_NATIVE_HANDOFF_CI") == "1":
+                print("SAFEEXAMOS_NATIVE_HANDOFF_CI_COMPLETE", flush=True)
+                break
     finally:
         if process is not None:
             dispose_browser(process, profiles / controller.mode)
