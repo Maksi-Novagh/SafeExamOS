@@ -114,6 +114,10 @@ class SupervisorTests(unittest.TestCase):
         self.assertIn('if profile.exists():', source)
         self.assertIn('if target is None and mode == "native-lab" and exit_code == 0:', source)
         self.assertIn("SAFEEXAMOS_NATIVE_HANDOFF_CI_COMPLETE", source)
+        self.assertIn("handoff_started = False", source)
+        self.assertIn("handoff_returned = False", source)
+        self.assertIn("elif handoff_returned:", source)
+        self.assertNotIn('print("SAFEEXAMOS_NATIVE_HANDOFF_CI_COMPLETE", flush=True)\n                break', source)
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaises(ValueError):
                 sup.browser_arguments("native-lab", Path(tmp))
