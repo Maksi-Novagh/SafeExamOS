@@ -36,6 +36,10 @@ RestartSec=2
 TimeoutStopSec=5
 NoNewPrivileges=true
 PrivateTmp=true
+# Entire root filesystem is read-only to the kiosk service; the ephemeral
+# /run runtime directory and private /tmp remain writable for browser state.
+# This does not protect against malicious code sharing the exam UID.
+ProtectSystem=strict
 ProtectHome=true
 ProtectKernelTunables=true
 ProtectKernelModules=true
