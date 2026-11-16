@@ -13,6 +13,9 @@ while [ "$(date +%s)" -lt "$deadline" ]; do
       printf '%s\n' 'SAFEEXAMOS_CI_WAYLAND_ACL_OK' > /dev/ttyS0 2>/dev/null || true
       exit 0
     fi
+    # This boot must never exit through the ordinary launcher marker.
+    sleep 1
+    continue
   fi
   if grep -Fq 'safeexamos.native_handoff_ci=1' /proc/cmdline; then
     logs=$(journalctl -b -u safeexamos-kiosk.service --no-pager -n 250 2>/dev/null || true)
