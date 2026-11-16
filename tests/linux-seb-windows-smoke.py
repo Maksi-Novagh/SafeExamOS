@@ -175,6 +175,15 @@ class ManagedWindowTests(unittest.TestCase):
         self.assertIn('safeexamos.wayland_acl_ci=1', session)
         self.assertIn('qemu-wayland-acl:', workflow)
 
+    def test_kiosk_filesystem_sandbox_baseline(self):
+        unit = (ROOT / "build/amd64/config/includes.chroot/etc/systemd/system/safeexamos-kiosk.service").read_text()
+        self.assertIn("ProtectSystem=strict", unit)
+        self.assertIn("RuntimeDirectory=safeexamos-exam", unit)
+        self.assertIn("RuntimeDirectoryMode=0700", unit)
+        self.assertIn("PrivateTmp=true", unit)
+        self.assertIn("NoNewPrivileges=true", unit)
+        self.assertNotIn("PrivateDevices=true", unit)
+
     def test_no_arbitrary_program_spawn_or_desktop_launcher(self):
         config_path = ROOT / "build/amd64/config/includes.chroot/etc/safeexamos/labwc/rc.xml"
         root = ET.parse(config_path).getroot()
