@@ -24,7 +24,7 @@
 <section class="panel">
 <h2>Exam configuration</h2>
 <div class="row"><label for="code">Exam code</label><div class="actions"><input id="code" placeholder="Enter DEMO for offline practice" autocomplete="off" spellcheck="false"><button class="primary" id="continue" type="button">Continue</button></div></div>
-<p class="muted" style="margin:12px 0 0 164px;font-size:12px">Local practice exam: enter <strong>DEMO</strong>. All other exam codes are unavailable in this prototype. The practice exam works without Internet access.</p>
+<p class="muted" style="margin:12px 0 0 164px;font-size:12px">Local practice exam: enter <strong>DEMO</strong>. NATIVE is reserved for opt-in native laboratory sessions. All other exam codes are unavailable in this prototype. The practice exam works without Internet access.</p>
 </section>
 <section class="panel" id="portal-panel">
 <h2>School portal</h2>
@@ -136,6 +136,17 @@ document.getElementById('continue').addEventListener('click',function(){
   const f=document.getElementById('code');
   const code=f.value.trim().toUpperCase();
   if(!code){f.focus({preventScroll:true});return;}
+  if(code==='NATIVE'){
+    if(window.SafeExamNativeLabEnabled!==true){
+      alert('Native Linux laboratory mode is disabled. Boot with the explicit laboratory flag.');
+      return;
+    }
+    if(!window.SafeExamTransition){alert('Local transition unavailable.');return;}
+    window.SafeExamTransition.request('start-native-lab').catch(function(){
+      alert('Native laboratory session could not start.');
+    });
+    return;
+  }
   if(code!=='DEMO'){
     alert('Prototype only: enter DEMO to open the local practice exam. Institution codes are not supported yet.');
     return;
