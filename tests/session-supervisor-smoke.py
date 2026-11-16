@@ -94,6 +94,20 @@ class SupervisorTests(unittest.TestCase):
         self.controller.complete("portal")
         self.assertEqual(self.controller.mode, "portal")
 
+    def test_optional_native_lab_transition_and_return(self):
+        self.assertEqual(self.transition("start-native-lab"), 409)
+        controller = sup.Controller(native_lab_enabled=True)
+        controller.request("start-native-lab", controller.token)
+        self.assertEqual(controller.consume_pending(), "native-lab")
+        controller.complete("native-lab")
+        with self.assertRaises(sup.TransitionError):
+            controller.request("start-demo", controller.token)
+        controller.finish_native_lab()
+        controller.complete("portal")
+        self.assertEqual(controller.mode, "portal")
+        self.assertEqual(sup.native_lab_arguments()[-1], "--supervised-lab")
+        self.assertNotIn("--no-sandbox", sup.native_lab_arguments())
+
     def test_unexpected_transition_rejected(self):
         self.assertEqual(self.transition("finish-demo"), 409)
         self.assertIsNone(self.controller.consume_pending())
