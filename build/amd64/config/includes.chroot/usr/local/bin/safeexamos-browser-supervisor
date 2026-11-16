@@ -248,6 +248,8 @@ def run() -> int:
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     process = None
+    handoff_started = False
+    handoff_returned = False
     try:
         while True:
             mode = controller.mode
@@ -258,8 +260,13 @@ def run() -> int:
             print("SAFEEXAMOS_BROWSER_MODE=" + mode, flush=True)
             process = subprocess.Popen(cmd, start_new_session=True)
             if mode == "portal" and os.environ.get("SAFEEXAMOS_NATIVE_HANDOFF_CI") == "1":
-                # Only the isolated QEMU fixture requests a native transition.
-                controller.request("start-native-lab", controller.token)
+                if not handoff_started:
+                    # Exactly one handoff per QEMU test boot; never loop.
+                    handoff_started = True
+                    controller.request("start-native-lab", controller.token)
+                elif handoff_returned:
+                    # Leave the restarted portal alive for framebuffer capture.
+                    print("SAFEEXAMOS_NATIVE_HANDOFF_CI_COMPLETE", flush=True)
             while process.poll() is None and controller.consume_pending() is None:
                 time.sleep(0.15)
             target = controller.consume_pending()
@@ -277,8 +284,7 @@ def run() -> int:
             controller.complete(target)
             print(f"SAFEEXAMOS_BROWSER_TRANSITION={mode}-to-{target}", flush=True)
             if mode == "native-lab" and os.environ.get("SAFEEXAMOS_NATIVE_HANDOFF_CI") == "1":
-                print("SAFEEXAMOS_NATIVE_HANDOFF_CI_COMPLETE", flush=True)
-                break
+                handoff_returned = True
     finally:
         if process is not None:
             dispose_browser(process, profiles / controller.mode)
