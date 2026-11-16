@@ -127,6 +127,25 @@ class ManagedWindowTests(unittest.TestCase):
         # No user-provided exam profile may silently enable popups.
         self.assertFalse(parse_config(fixture()).allow_secondary_windows)
 
+    def test_native_webkit_crash_and_close_are_fail_closed(self):
+        app = (BASE / "app.py").read_text(encoding="utf-8")
+        packaged = (ROOT / "build/amd64/config/includes.chroot/usr/local/bin/safeexamos-linux-seb").read_text(encoding="utf-8")
+        self.assertEqual(app, packaged)
+        self.assertIn('view.connect("web-process-terminated", self._renderer_terminated, record.window_id)', app)
+        self.assertIn('child.connect("destroy", lambda *_: self._close_child(view, record.window_id))', app)
+        self.assertIn('if not manager.close(window_id):', app)
+        self.assertIn('renderer_failed["value"] = True', app)
+        self.assertIn('return 2 if renderer_failed["value"] else 0', app)
+
+    def test_secondary_close_is_idempotent(self):
+        p = parse_config(fixture(max_browser_windows=2, allow_secondary_windows=True))
+        registry = ManagedWindows(p)
+        main = registry.open_main()
+        child = registry.open_child(main.window_id, "https://exam.example.org/doc")
+        self.assertTrue(registry.close(child.window_id))
+        self.assertFalse(registry.close(child.window_id))
+        self.assertEqual(list(registry.records), [main.window_id])
+
     def test_no_arbitrary_program_spawn_or_desktop_launcher(self):
         config_path = ROOT / "build/amd64/config/includes.chroot/etc/safeexamos/labwc/rc.xml"
         root = ET.parse(config_path).getroot()
