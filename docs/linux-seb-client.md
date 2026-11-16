@@ -114,3 +114,7 @@ This demonstrates basic stacked native WebKit windows when it passes, not OS-enf
 ## Live JavaScript popup regression (2026-11-15)
 
 A seventh QEMU job uses safeexamos.popups_ci=1 to issue real WebKitGTK window.open calls from an offline page. An unrelated HTTPS URL should be refused, while an about:blank popup is permitted only within this explicitly opted-in CI mode and receives offline orange HTML. The observer requires popup rejection, child creation, and child load events; framebuffer evidence must contain both the primary blue view and orange secondary window. This does not grant production exam pages automatic popup permissions or certify compositor confinement. CI validation is pending.
+
+## Managed-window parentage hardening (2026-11-16)
+
+The experimental window registry now permits secondary WebViews to be created **only by the primary exam WebView**, not by another child popup. Invalid/non-integer parent identifiers are rejected (including Python booleans), and closed child identifiers cannot be reused. This prevents nested popup trees whose descendants could outlive their parent in the current GTK window lifecycle. The policy is enforced by the native application registry; it is **not** an OS-wide compositor boundary and does not authorize other applications. The same policy is shipped in the image and checked for exact source parity by unit tests. Rollback: revert this change if a future approved assessment provider requires nested popups, but first implement explicit descendant teardown and lifecycle testing.
