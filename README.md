@@ -80,7 +80,7 @@ The current base candidate is **Debian 13 (Trixie)** for amd64/arm64/armhf. The 
 
 ```text
 ┌────────────────────────────────────────────┐
-│               SafeExamOS UI               │
+│               SafeExamOS UI                │
 │ pre-flight · network · accessibility · exam│
 ├────────────────────────────────────────────┤
 │             Exam Session Manager           │
