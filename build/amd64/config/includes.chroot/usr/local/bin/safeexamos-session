@@ -70,4 +70,9 @@ if grep -Eq '(^|[[:space:]])safeexamos.native_ci=1([[:space:]]|$)' /proc/cmdline
     --config /usr/share/safeexamos/linux-seb-fixture.json --smoke-ui
 fi
 
+# Lab-only supervised native browser is disabled unless explicitly booted.
+if grep -Eq '(^|[[:space:]])safeexamos.native_supervisor_lab=1([[:space:]]|$)' /proc/cmdline; then
+  export SAFEEXAMOS_NATIVE_SUPERVISOR_LAB=1
+  echo "SAFEEXAMOS_NATIVE_SUPERVISOR_LAB_ENABLED"
+fi
 exec cage -d -- /usr/local/bin/safeexamos-browser-supervisor
