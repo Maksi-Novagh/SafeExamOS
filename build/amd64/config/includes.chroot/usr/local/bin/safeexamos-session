@@ -45,6 +45,11 @@ echo "SAFEEXAMOS_CAGE_START"
 # offline page. Normal boot still starts Chromium and the school portal.
 # Explicitly selected experimental stacked-window compositor.
 # Never selected for normal Smartschool or normal Cage boot.
+if grep -Eq '(^|[[:space:]])safeexamos.wayland_acl_ci=1([[:space:]]|$)' /proc/cmdline; then
+  echo "SAFEEXAMOS_WAYLAND_ACL_CI_START"
+  exec cage -d -- /usr/local/bin/safeexamos-browser-supervisor
+fi
+
 if grep -Eq '(^|[[:space:]])safeexamos.native_handoff_ci=1([[:space:]]|$)' /proc/cmdline; then
   export SAFEEXAMOS_NATIVE_SUPERVISOR_LAB=1
   export SAFEEXAMOS_NATIVE_HANDOFF_CI=1
