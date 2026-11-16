@@ -33,6 +33,8 @@ scripts/render-portals.py
 linux-seb/policy.py
 linux-seb/app.py
 linux-seb/windows.py
+linux-seb/fd_handoff.py
+tests/wayland-fd-handoff-smoke.py
 tests/linux-seb-windows-smoke.py
 build/amd64/config/includes.chroot/usr/local/bin/linux_seb_windows.py
 build/amd64/config/includes.chroot/etc/safeexamos/labwc/rc.xml
@@ -144,7 +146,8 @@ node ./tests/portal-browser-smoke.cjs
 python3 ./tests/session-supervisor-smoke.py
 python3 ./tests/linux-seb-smoke.py
 python3 ./tests/linux-seb-windows-smoke.py
-python3 -m py_compile ./linux-seb/app.py ./linux-seb/policy.py ./linux-seb/windows.py ./build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-wayland-acl-probe
+python3 ./tests/wayland-fd-handoff-smoke.py
+python3 -m py_compile ./linux-seb/app.py ./linux-seb/policy.py ./linux-seb/windows.py ./linux-seb/fd_handoff.py ./build/amd64/config/includes.chroot/usr/local/sbin/safeexamos-wayland-acl-probe
 sh ./tests/preflight-smoke.sh
 python3 -m py_compile ./scripts/verify-framebuffer.py
 
