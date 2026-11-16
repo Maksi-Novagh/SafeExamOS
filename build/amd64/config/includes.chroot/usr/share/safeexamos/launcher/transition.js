@@ -5,9 +5,14 @@
 (function () {
   'use strict';
   const token = document.querySelector('meta[name="safeexamos-transition-token"]')?.content;
+  window.SafeExamNativeLabEnabled = false;
+  fetch('/api/status', {cache: 'no-store', credentials: 'same-origin'})
+    .then(r => r.ok ? r.json() : null)
+    .then(data => { window.SafeExamNativeLabEnabled = !!(data && data.native_lab_enabled && data.mode === 'portal'); })
+    .catch(() => {});
   window.SafeExamTransition = Object.freeze({
     async request(action) {
-      if (!token || !['start-demo', 'finish-demo'].includes(action)) {
+      if (!token || !['start-demo', 'finish-demo', 'start-native-lab'].includes(action)) {
         throw new Error('Local session transition unavailable');
       }
       const result = await fetch('/api/transition', {
