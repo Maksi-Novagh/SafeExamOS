@@ -232,3 +232,9 @@ Security tests should be written as reproducible lab tests:
 - regression test.
 
 Responsible-disclosure findings affecting upstream SEB should be reported privately before publication when appropriate.
+
+## Same-UID process boundary (2026-11-16)
+
+The Wayland ACL QEMU test establishes that the private runtime directory excludes *other Unix UIDs*. It does not distinguish Chromium, WebKitGTK, the supervisor or a compromised child running as the same `exam` UID. An attacker who achieves code execution under that UID may attempt to connect to its Wayland socket and interfere with other surfaces. Unix file mode `0700`, Cage single-surface mode and GTK key handlers do not close this gap.
+
+Before claiming per-process isolation, redesign the compositor/browser split around distinct unprivileged identities or a compositor-enforced client authorization capability, with a narrow privileged setup component, explicit socket ownership/access rules, and live negative tests for a same-UID unapproved client. Do not weaken Chromium/WebKit sandboxing to obtain that separation. The new `ProtectSystem=strict` sandbox restricts host filesystem writes but does *not* address same-UID socket access.
