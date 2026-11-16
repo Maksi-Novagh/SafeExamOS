@@ -124,6 +124,7 @@ grep -Fq 'User=exam' "$SEAT_UNIT"
 grep -Fq 'Environment=WLR_RENDERER=pixman' "$SEAT_UNIT"
 grep -Fq 'Environment=XDG_CACHE_HOME=/run/safeexamos-exam/cache' "$SEAT_UNIT"
 grep -Fq 'Environment=HOME=/run/safeexamos-exam' "$SEAT_UNIT"
+grep -Fq 'ProtectSystem=strict' "$SEAT_UNIT"
 
 command -v node >/dev/null 2>&1 || {
   echo "error: Node.js is required for automated launcher fixtures" >&2
