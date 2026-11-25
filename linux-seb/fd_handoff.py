@@ -17,7 +17,9 @@ class HandoffError(ValueError):
 
 def send_wayland_fd(channel: socket.socket, connected_socket: socket.socket) -> None:
     """Send one already connected Unix stream socket over a trusted channel."""
-    if channel.family != socket.AF_UNIX or channel.type & socket.SOCK_STREAM != socket.SOCK_STREAM:
+    if channel.family != socket.AF_UNIX or channel.getsockopt(
+        socket.SOL_SOCKET, socket.SO_TYPE
+    ) != socket.SOCK_STREAM:
         raise HandoffError("Transport must be a Unix stream socket")
     if connected_socket.family != socket.AF_UNIX or connected_socket.getsockopt(
         socket.SOL_SOCKET, socket.SO_TYPE
@@ -30,44 +32,54 @@ def send_wayland_fd(channel: socket.socket, connected_socket: socket.socket) -> 
 
 
 def receive_wayland_fd(channel: socket.socket) -> int:
-    """Receive one Unix stream descriptor and close every rejected descriptor."""
+    """Receive one Unix stream descriptor and reject all malformed transfers.
+
+    The transport is not authentication. A trusted parent must verify its
+    intended child/peer and must not expose the channel as a public socket.
+    """
     if channel.family != socket.AF_UNIX or channel.getsockopt(
         socket.SOL_SOCKET, socket.SO_TYPE
     ) != socket.SOCK_STREAM:
         raise HandoffError("Invalid transport")
     width = array.array("i").itemsize
     data, anc, flags, _ = channel.recvmsg(1, socket.CMSG_SPACE(width * 2))
-    fds: list[int] = []
-    accepted = None
+    received: list[int] = []
+    accepted: int | None = None
     try:
         for level, kind, raw in anc:
             if level == socket.SOL_SOCKET and kind == socket.SCM_RIGHTS:
                 values = array.array("i")
                 values.frombytes(raw[:len(raw) - len(raw) % width])
-                fds.extend(values)
-        if data != b"W" or flags & (socket.MSG_CTRUNC | socket.MSG_TRUNC) or len(fds) != 1:
+                received.extend(values)
+        if data != b"W" or flags & (socket.MSG_CTRUNC | socket.MSG_TRUNC) or len(received) != 1:
             raise HandoffError("Expected exactly one Wayland descriptor")
-        fd = fds[0]
-        candidate = socket.socket(fileno=fd)
+        candidate = socket.socket(fileno=received[0])
         try:
             if candidate.family != socket.AF_UNIX or candidate.getsockopt(
                 socket.SOL_SOCKET, socket.SO_TYPE
             ) != socket.SOCK_STREAM:
                 raise HandoffError("Received descriptor is not a Unix stream socket")
-            os.set_inheritable(fd, False)
+            os.set_inheritable(candidate.fileno(), False)
             accepted = candidate.detach()
             return accepted
         finally:
-            # If validation fails, socket wrapper closes its rejected fd.
+            # If validation fails, the socket object owns and closes the FD.
             candidate.close()
     except (OSError, ValueError) as exc:
         if isinstance(exc, HandoffError):
             raise
         raise HandoffError("Invalid transferred socket") from exc
     finally:
-        for item in fds:
-            if item != accepted:
-                try:
-                    os.close(item)
-                except OSError:
-                    pass
+        # The socket constructor above takes ownership of the first FD. It
+        # may already have closed it on validation failure. Close only the
+        # remaining descriptors, avoiding double-close/reused-FD races.
+        for item in received[1:]:
+            try:
+                os.close(item)
+            except OSError:
+                pass
+        if received and accepted is None and "candidate" not in locals():
+            try:
+                os.close(received[0])
+            except OSError:
+                pass
