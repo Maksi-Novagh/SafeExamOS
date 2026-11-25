@@ -37,3 +37,7 @@ boot. Existing kiosk behavior remains unchanged pending actual integration.
 
 Rollback: remove the new source/test/documentation files. No boot options
 or service definitions have changed.
+
+## Transport regression extension — 2026-11-25
+
+The offline suite now starts a real Python child via `subprocess.Popen(..., pass_fds=...)`, transfers a single connected Unix stream socket over an inherited private channel, and verifies child-to-server communication across the exec boundary. It also verifies rejection of multiple transferred FDs. This tests the transport API's use in a separate *process*, but **does not switch Unix accounts or grant browser authorization**. The child is a test stand-in, not Chromium/WebKitGTK, and no compositor socket is exposed or altered. The next milestone is an opt-in QEMU experiment with a trusted root bootstrap, compositor-specific UID, browser UID, and a real negative test of unauthorised socket access, while preserving the existing normal boot.
